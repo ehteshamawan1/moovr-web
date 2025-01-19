@@ -78,7 +78,14 @@ const DriverConfirmation = () => {
   return (
     <div className="min-h-screen w-full">
       <Header />
+<<<<<<< HEAD
       <div className="relative min-h-[800px] h-screen w-full">
+=======
+
+      {/* Main Content */}
+      <div className=" relative min-h-[800px] h-screen w-full">
+        {/* Map Background */}
+>>>>>>> refs/remotes/origin/main
         <div className="absolute inset-0 w-full h-full">
           <img
             title="Map"
@@ -86,7 +93,13 @@ const DriverConfirmation = () => {
             className="w-full h-full object-cover"
           />
         </div>
+<<<<<<< HEAD
         <div className="absolute top-20 left-6 space-y-4">
+=======
+
+        {/* Floating Card Section */}
+        <div className=" absolute top-20 left-6  space-y-4 ">
+>>>>>>> refs/remotes/origin/main
           <button
             onClick={() => navigate(-1)}
             className="flex gap-3 items-center mb-8 cursor-pointer py-2 px-3 rounded-[12px] w-fit hover:bg-gray-100"
@@ -134,10 +147,19 @@ const DriverConfirmation = () => {
                 ₦7.80<span className="text-gray-500 text-sm">/hour</span>
               </p>
             </div>
+<<<<<<< HEAD
             <button
               onClick={handleConfirm}
               className="bg-purple-500 text-center text-white py-3 w-full rounded-full text-lg font-semibold hover:bg-purple-600"
               disabled={loading}
+=======
+
+            {/* Confirm Button */}
+
+            <Link
+              to={"/driver/start"}
+              className="bg-purple-500 text-center text-white py-3 w-full rounded-full text-lg font-semibold hover:bg-purple-600"
+>>>>>>> refs/remotes/origin/main
             >
               {loading ? "Booking..." : "Confirm"}
             </button>

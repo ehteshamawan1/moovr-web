@@ -116,6 +116,7 @@ const DriverBooking = () => {
             )}
           </div>
         </div>
+<<<<<<< HEAD
 
         {/* Bookings Section */}
         {loading ? (
@@ -139,6 +140,20 @@ const DriverBooking = () => {
             ))}
           </div>
         )}
+=======
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 justify-center">
+          {Array.from({ length: 12 }).map((_, index) => (
+            <DriverCard
+              key={index}
+              name={drivers[index % drivers.length].name}
+              rating={drivers[index % drivers.length].rating}
+              price={drivers[index % drivers.length].price}
+              availability={drivers[index % drivers.length].availability}
+              carTypes={drivers[index % drivers.length].carTypes}
+            />
+          ))}
+        </div>
+>>>>>>> refs/remotes/origin/main
       </div>
     </div>
   );
