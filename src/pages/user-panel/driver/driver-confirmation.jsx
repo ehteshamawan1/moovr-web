@@ -8,15 +8,19 @@ const DriverConfirmation = () => {
   const { driverId } = useParams(); // Extract driverId from URL params
   const navigate = useNavigate();
 
+  // Static userId
+  const userId = "abcdg"; 
+
   // State to manage form data
   const [formData, setFormData] = useState({
-    driverId: driverId,
+    user: userId, // Static userId
+    driver: driverId,
     location: "",
     carName: "",
     carNumber: "",
-    startTime: 8, // Default start time (can be updated by the user)
-    endTime: 12, // Default end time (can be updated by the user)
-    paymentMethod: "credit_card",
+    startTime: new Date(), // Default start time
+    endTime: new Date(), // Default end time
+    paymentMethod: "credit_card", // Default payment method
   });
 
   // State for loading and error
@@ -34,7 +38,7 @@ const DriverConfirmation = () => {
     setLoading(true);
     setError("");
 
-    if (!formData.driverId) {
+    if (!formData.driver) {
       setError("Driver ID is missing.");
       setLoading(false);
       return;
@@ -42,20 +46,12 @@ const DriverConfirmation = () => {
 
     try {
       const response = await axios.post(
-        "https://moovr-api.vercel.app/api/v1/bookings/book", // Make sure this endpoint is correct
-        {
-          driverId: formData.driverId,
-          location: formData.location,
-          carName: formData.carName,
-          carNumber: formData.carNumber,
-          startTime: formData.startTime,
-          endTime: formData.endTime,
-          paymentMethod: formData.paymentMethod,
-        },
+        "https://moovr-api.vercel.app/api/v1/bookings/book",
+        formData,
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Use a valid token
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM",
             "Content-Type": "application/json",
           },
         }
@@ -66,9 +62,13 @@ const DriverConfirmation = () => {
         navigate("/driver/start");
       }
     } catch (err) {
+      const errorMessage = err.response?.data?.message || "An unexpected error occurred.";
+      const errorDetails = err.response?.data?.details || null;
+
       setError(
-        err.response?.data?.message ||
-          "An unexpected error occurred. Please try again."
+        errorDetails
+          ? `${errorMessage}: ${errorDetails}`
+          : errorMessage
       );
     } finally {
       setLoading(false);
@@ -126,6 +126,47 @@ const DriverConfirmation = () => {
                 onChange={handleChange}
                 className="w-full p-3 bg-bgGray rounded-lg focus:outline-none text-gray-600"
               />
+            </div>
+          </div>
+
+          {/* Time Details Section */}
+          <div className="bg-white rounded-2xl shadow-md p-4">
+            <h3 className="text-gray-800 font-semibold mb-2">Time Details</h3>
+            <div className="space-y-2">
+              <label className="text-gray-600">Start Time</label>
+              <input
+                type="datetime-local"
+                name="startTime"
+                value={formData.startTime}
+                onChange={handleChange}
+                className="w-full p-3 bg-bgGray rounded-lg focus:outline-none text-gray-600"
+              />
+              <label className="text-gray-600">End Time</label>
+              <input
+                type="datetime-local"
+                name="endTime"
+                value={formData.endTime}
+                onChange={handleChange}
+                className="w-full p-3 bg-bgGray rounded-lg focus:outline-none text-gray-600"
+              />
+            </div>
+          </div>
+
+          {/* Payment and Status Section */}
+          <div className="bg-white rounded-2xl shadow-md p-4">
+            <h3 className="text-gray-800 font-semibold mb-2">Payment & Status</h3>
+            <div className="space-y-2">
+              <label className="text-gray-600">Payment Method</label>
+              <select
+                name="paymentMethod"
+                value={formData.paymentMethod}
+                onChange={handleChange}
+                className="w-full p-3 bg-bgGray rounded-lg focus:outline-none text-gray-600"
+              >
+                <option value="credit_card">Credit Card</option>
+                <option value="cash">Cash</option>
+                <option value="mobile_payment">Mobile Payment</option>
+              </select>
             </div>
           </div>
         </div>
