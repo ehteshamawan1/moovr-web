@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Header from "../../../components/user-panel/header"; // Import your Header component
-import DriverCard from "../../../components/user-panel/driver-booking-card"; // Import DriverCard
+import Header from "../../../components/user-panel/header";
+import DriverCard from "../../../components/user-panel/driver-booking-card";
 import { BiArrowBack } from "react-icons/bi";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
@@ -12,8 +12,8 @@ const DriverBooking = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM";
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace this with your actual or dummy token for testing
+  ;
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -32,12 +32,8 @@ const DriverBooking = () => {
           throw new Error(`API error: ${response.status} ${response.statusText}`);
         }
 
-        if (response.headers.get("content-type")?.includes("application/json")) {
-          const data = await response.json();
-          setBookings(data.bookings || []);
-        } else {
-          throw new Error("Unexpected content type received from API.");
-        }
+        const data = await response.json();
+        setBookings(data.bookings || []);
       } catch (err) {
         console.error("Fetch error:", err);
         setError(err.message);
@@ -45,7 +41,6 @@ const DriverBooking = () => {
         setLoading(false);
       }
     };
-
 
     fetchBookings();
   }, []);
@@ -61,10 +56,7 @@ const DriverBooking = () => {
 
   return (
     <div className="h-full w-full">
-      {/* Header */}
       <Header />
-
-      {/* Main Content */}
       <div className="max-w-[1180px] mx-auto p-6">
         <div className="flex justify-between items-center mb-4">
           <div className="flex gap-3 items-center mb-4 hover:bg-gray-100 cursor-pointer py-2 px-3 rounded-[12px] w-fit">
@@ -72,20 +64,14 @@ const DriverBooking = () => {
             <h1 className="text-lg font-semibold">Driver Booking</h1>
           </div>
           <div className="relative">
-            {/* Dropdown Button */}
             <button
               onClick={toggleDropdown}
               className="flex items-center justify-between px-4 py-2 bg-purple-100 text-purple-500 rounded-full shadow-sm"
             >
               {selectedOption}
-              {isDropdownOpen ? (
-                <FaChevronUp className="ml-2" />
-              ) : (
-                <FaChevronDown className="ml-2" />
-              )}
+              {isDropdownOpen ? <FaChevronUp className="ml-2" /> : <FaChevronDown className="ml-2" />}
             </button>
 
-            {/* Dropdown Menu */}
             {isDropdownOpen && (
               <div className="absolute top-12 right-0 w-56 bg-white shadow-lg rounded-lg mt-1 p-2">
                 <ul className="flex flex-col">
@@ -102,7 +88,7 @@ const DriverBooking = () => {
                     Available
                   </li>
                   <li className="px-4 py-2 flex justify-between items-center gap-4">
-                    <label className="">Price</label>
+                    <label>Price</label>
                     <input
                       type="text"
                       value={priceValue}
@@ -117,7 +103,6 @@ const DriverBooking = () => {
           </div>
         </div>
 
-        {/* Bookings Section */}
         {loading ? (
           <p>Loading bookings...</p>
         ) : error ? (
@@ -129,28 +114,16 @@ const DriverBooking = () => {
             {bookings.map((booking) => (
               <DriverCard
                 key={booking._id}
-                id={booking._id} // Pass the booking ID here
-                name={booking.carName}
-                rating={booking.driver.rating || 4.5} // Example rating
+                id={booking._id}
+                name={booking.name}
+                rating={booking.driver?.rating || 4.5}
                 price={booking.totalPrice}
                 availability={booking.status}
-                carTypes={["Suv", "Sedan"]} // Example car types
+                carTypes={["Suv", "Sedan"]}
               />
             ))}
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 justify-center">
-          {Array.from({ length: 12 }).map((_, index) => (
-            <DriverCard
-              key={index}
-              name={drivers[index % drivers.length].name}
-              rating={drivers[index % drivers.length].rating}
-              price={drivers[index % drivers.length].price}
-              availability={drivers[index % drivers.length].availability}
-              carTypes={drivers[index % drivers.length].carTypes}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );
