@@ -4,6 +4,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { BaseURL } from "../../../utils/BaseURL";
 
 const DriverRegister = () => {
   const location = useLocation();
@@ -20,21 +21,35 @@ const DriverRegister = () => {
 
     try {
       const response = await axios.post(
-        "https://moovr-api.vercel.app/api/v1/auth/verify-phone",
-        { phone: phoneNumber },
+        `${BaseURL}/v1/auth/verify-phone`,
+        {
+          phone: `+${phoneNumber}`,
+          role: "driver",
+        },
         { headers: { "Content-Type": "application/json" } }
       );
 
-      toast.success("OTP requested successfully!");
+      if (response.status === 200) {
+        toast.success("OTP requested successfully!");
 
-      let userData = {
-        phone: phoneNumber,
-      };
+        let userData = {
+          phone: phoneNumber,
+        };
 
-      localStorage.setItem("userData", JSON.stringify(userData));
-      navigate("/d/verification");
+        localStorage.setItem("userData", JSON.stringify(userData));
+        navigate("/d/verification");
+      } else {
+        // Handle unexpected success response
+        toast.error("Unexpected response. Please try again.");
+      }
     } catch (error) {
-      toast.error("Error requesting OTP. Please try again.");
+      // Display error message from backend if available
+      const errorMessage =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : "Error requesting OTP. Please try again.";
+
+      toast.error(errorMessage);
       console.error("Error requesting OTP:", error);
     }
   };

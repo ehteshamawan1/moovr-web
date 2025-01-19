@@ -9,4 +9,13 @@ export default defineConfig({
       external: ["react-intl-tel-input"],
     },
   },
+  // server: {
+  //   proxy: {
+  //     "/api": {
+  //       target: "https://moovr-api.vercel.app",
+  //       changeOrigin: true,
+  //       secure: false,
+  //     },
+  //   },
+  // },
 });

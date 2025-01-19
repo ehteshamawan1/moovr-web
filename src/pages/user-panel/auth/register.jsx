@@ -1,18 +1,55 @@
 import React, { useState } from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { BaseURL } from "../../../utils/BaseURL";
 
 const Register = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
+  const navigate = useNavigate();
 
   const handlePhoneNumberChange = (value) => {
     setPhoneNumber(value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Phone Number:", phoneNumber);
+
+    try {
+      const response = await axios.post(
+        `${BaseURL}/v1/auth/verify-phone`,
+        {
+          phone: `+${phoneNumber}`,
+          role: "user",
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      if (response.status === 200) {
+        toast.success("OTP requested successfully!");
+
+        let userData = {
+          phone: phoneNumber,
+        };
+
+        localStorage.setItem("userData", JSON.stringify(userData));
+        navigate("/verification");
+      } else {
+        // Handle unexpected success response
+        toast.error("Unexpected response. Please try again.");
+      }
+    } catch (error) {
+      // Display error message from backend if available
+      const errorMessage =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : "Error requesting OTP. Please try again.";
+
+      toast.error(errorMessage);
+      console.error("Error requesting OTP:", error);
+    }
   };
 
   return (
@@ -35,14 +72,12 @@ const Register = () => {
               onChange={handlePhoneNumberChange}
               inputClass="w-full border-2 border-gray-200 rounded-full p-2 focus:outline-none"
             />
-            <Link to={"/verification"}>
-              <button
-                type="submit"
-                className="w-full py-2 mt-3 bg-purple-500 text-white rounded-full hover:bg-purple-600"
-              >
-                Continue
-              </button>
-            </Link>
+            <button
+              type="submit"
+              className="w-full py-2 mt-3 bg-purple-500 text-white rounded-full hover:bg-purple-600"
+            >
+              Continue
+            </button>
           </form>
           <div className="text-center mt-4">
             <p>

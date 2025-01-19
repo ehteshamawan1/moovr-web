@@ -6,6 +6,7 @@ import { FaCloudUploadAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { BaseURL } from "../../utils/BaseURL";
 
 export default function SetupLicense() {
   const [file, setFile] = useState(null);
@@ -28,17 +29,14 @@ export default function SetupLicense() {
     formData.append("file", file);
 
     try {
-      const response = await fetch(
-        "https://moovr-api.vercel.app/api/v1/driver/upload-document",
-        {
-          method: "POST",
-          body: formData,
-          headers: {
-            "Authorization":
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Replace with your actual token
-          },
-        }
-      );
+      const response = await fetch(`${BaseURL}/driver/upload-document`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Replace with your actual token
+        },
+      });
 
       if (response.ok) {
         toast.success("License uploaded successfully!", {
@@ -80,7 +78,8 @@ export default function SetupLicense() {
             Driving License
           </h2>
           <p className="text-sm text-gray-600 text-center mb-6">
-            Upload your high-quality picture, where your face is clearly visible.
+            Upload your high-quality picture, where your face is clearly
+            visible.
           </p>
 
           {/* File Upload */}

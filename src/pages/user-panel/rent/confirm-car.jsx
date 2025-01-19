@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../../components/user-panel/header";
+import { BaseURL } from "../../../utils/BaseURL";
 
 const ConfirmCar = () => {
   const { id } = useParams(); // Get the car ID from the URL parameters
@@ -15,10 +16,11 @@ const ConfirmCar = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("https://moovr-api.vercel.app/api/v1/rent/rent", {
+      const response = await fetch(`${BaseURL}/rent/rent`, {
         method: "POST",
         headers: {
-          Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Replace with your dynamic token
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Replace with your dynamic token
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -78,7 +80,9 @@ const ConfirmCar = () => {
           <div className="grid grid-cols-3 items-end gap-6">
             {/* Delivery Location */}
             <div>
-              <label className="block text-gray-500 mb-2">Delivery Location</label>
+              <label className="block text-gray-500 mb-2">
+                Delivery Location
+              </label>
               <div className="relative">
                 <input
                   type="text"
@@ -93,7 +97,9 @@ const ConfirmCar = () => {
 
             {/* Rent Start Date/Time */}
             <div>
-              <label className="block text-gray-500 mb-2">Rent Date and Time</label>
+              <label className="block text-gray-500 mb-2">
+                Rent Date and Time
+              </label>
               <input
                 type="datetime-local"
                 value={rentStartDate}

@@ -5,6 +5,7 @@ import Header from "../../components/driver-panel/header";
 import { FiChevronDown } from "react-icons/fi";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { BaseURL } from "../../utils/BaseURL";
 
 export default function EditListing() {
   const { id } = useParams(); // Get the vehicle id from the URL
@@ -22,14 +23,11 @@ export default function EditListing() {
       const dummyToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace this with your actual or dummy token for testing
 
-      const response = await axios.get(
-        `https://moovr-api.vercel.app/api/v1/cars/list/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${dummyToken}`,
-          },
-        }
-      );
+      const response = await axios.get(`${BaseURL}/cars/list/${id}`, {
+        headers: {
+          Authorization: `Bearer ${dummyToken}`,
+        },
+      });
 
       console.log("API Response:", response);
       if (response.data?.carListing) {
@@ -64,7 +62,7 @@ export default function EditListing() {
       };
 
       const response = await axios.put(
-        `https://moovr-api.vercel.app/api/v1/cars/list/${id}`,
+        `${BaseURL}/cars/list/${id}`,
         updatedDetails,
         {
           headers: {

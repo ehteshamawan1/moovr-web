@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
+import { BaseURL } from "../../../utils/BaseURL";
 
 const DriverVerification = () => {
   const [code, setCode] = useState(["", "", "", ""]);
   const [resendTimer, setResendTimer] = useState(57);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const navigate = useNavigate();
 
   // Handle input changes for each digit
   const handleChange = (e, index) => {
@@ -25,15 +30,57 @@ const DriverVerification = () => {
     }
   }, [resendTimer]);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    // Get userData from localStorage and extract the phone number
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    const number = userData?.phone || "";
+    setPhoneNumber(number);
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const verificationCode = code.join("");
-    // Handle verification logic here
-    console.log("Verification Code:", verificationCode);
+
+    if (!phoneNumber) {
+      toast.error("Phone number not found in localStorage.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${BaseURL}/v1/auth/verify-otp`,
+        { otp: verificationCode, phone: `+${phoneNumber}` },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      if (response.status === 200) {
+        toast.success("OTP verified successfully!");
+
+        const { token } = response.data;
+        console.log(response);
+        if (token) {
+          localStorage.setItem("token", token);
+          navigate("/");
+        } else {
+          navigate("/d/name");
+        }
+      } else {
+        toast.error("Unexpected response. Please try again.");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : "Error verifying OTP. Please try again.";
+
+      toast.error(errorMessage);
+      console.error("Error verifying OTP:", error);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Toaster />
       <div className="w-full max-w-[1180px] min-h-[500px] flex items-center bg-white rounded-2xl shadow-md p-8 relative overflow-hidden">
         {/* Bottom right curve */}
         <div className=" absolute bottom-0 left-0 h-full">
@@ -55,7 +102,7 @@ const DriverVerification = () => {
         {/* Content */}
         <div className="relative mx-auto max-w-[300px]">
           <h2 className="text-lg font-semibold mb-4">
-            Enter the 4 digit code sent to you at +2345-xxxxxxx
+            Enter the 4 digit code sent to you at +{phoneNumber}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex justify-center space-x-4">
@@ -87,14 +134,12 @@ const DriverVerification = () => {
                 </button>
               )}
             </div>
-            <Link to={"/d/name"}>
-              <button
-                type="submit"
-                className="w-full py-3 mt-3 bg-purple-500 text-white rounded-full text-lg hover:bg-purple-600"
-              >
-                Verify
-              </button>
-            </Link>
+            <button
+              type="submit"
+              className="w-full py-3 mt-3 bg-purple-500 text-white rounded-full text-lg hover:bg-purple-600"
+            >
+              Verify
+            </button>
           </form>
         </div>
       </div>

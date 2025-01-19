@@ -3,13 +3,14 @@ import Header from "../../../components/user-panel/header";
 import { BiArrowBack } from "react-icons/bi";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { BaseURL } from "../../../utils/BaseURL";
 
 const DriverConfirmation = () => {
   const { driverId } = useParams(); // Extract driverId from URL params
   const navigate = useNavigate();
 
   // Static userId
-  const userId = "abcdg"; 
+  const userId = "abcdg";
 
   // State to manage form data
   const [formData, setFormData] = useState({
@@ -45,30 +46,25 @@ const DriverConfirmation = () => {
     }
 
     try {
-      const response = await axios.post(
-        "https://moovr-api.vercel.app/api/v1/bookings/book",
-        formData,
-        {
-          headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM",
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(`${BaseURL}/bookings/book`, formData, {
+        headers: {
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM",
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.data.message === "Driver booked successfully") {
         alert("Driver booked successfully!");
         navigate("/driver/start");
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "An unexpected error occurred.";
+      const errorMessage =
+        err.response?.data?.message || "An unexpected error occurred.";
       const errorDetails = err.response?.data?.details || null;
 
       setError(
-        errorDetails
-          ? `${errorMessage}: ${errorDetails}`
-          : errorMessage
+        errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage
       );
     } finally {
       setLoading(false);
@@ -154,7 +150,9 @@ const DriverConfirmation = () => {
 
           {/* Payment and Status Section */}
           <div className="bg-white rounded-2xl shadow-md p-4">
-            <h3 className="text-gray-800 font-semibold mb-2">Payment & Status</h3>
+            <h3 className="text-gray-800 font-semibold mb-2">
+              Payment & Status
+            </h3>
             <div className="space-y-2">
               <label className="text-gray-600">Payment Method</label>
               <select

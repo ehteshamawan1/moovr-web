@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { FiUpload } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { BaseURL } from "../../utils/BaseURL";
 
 export default function VehicleInsurance() {
   const [formData, setFormData] = useState({
@@ -43,7 +44,7 @@ export default function VehicleInsurance() {
     form.append("file", formData.file);
 
     try {
-      const response = await fetch("https://moovr-api.vercel.app/api/v1/driver/upload-document", {
+      const response = await fetch(`${BaseURL}/driver/upload-document`, {
         method: "POST",
         body: form,
         headers: {
@@ -65,7 +66,11 @@ export default function VehicleInsurance() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+      />
       <div className="w-full max-w-[1180px] bg-white rounded-2xl shadow-md p-8 py-12 relative overflow-hidden">
         {/* Purple curved accent */}
         <div className="absolute top-0 right-0">
@@ -177,7 +182,9 @@ export default function VehicleInsurance() {
                     value={formData.file ? formData.file.name : ""}
                     className="w-full pl-10 pr-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#8257E9] focus:border-[#8257E9] cursor-pointer"
                     readOnly
-                    onClick={() => document.getElementById("fileInput")?.click()}
+                    onClick={() =>
+                      document.getElementById("fileInput")?.click()
+                    }
                   />
                   <FiUpload className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                   <input

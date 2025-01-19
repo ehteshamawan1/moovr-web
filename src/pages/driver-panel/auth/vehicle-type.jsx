@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { BaseURL } from "../../../utils/BaseURL";
 
 export default function VehicleTypes() {
+  const navigate = useNavigate();
   const vehicles = [
     {
       title: "MoovR X",
@@ -39,14 +42,11 @@ export default function VehicleTypes() {
     console.log("Sending Data:", userData);
 
     try {
-      const response = await fetch(
-        "https://moovr-api.vercel.app/api/v1/auth/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userData),
-        }
-      );
+      const response = await fetch(`${BaseURL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
 
       if (response.ok) {
         const data = await response.json(); // Parse response to get the token and user details
@@ -60,7 +60,7 @@ export default function VehicleTypes() {
         localStorage.removeItem("userData");
 
         alert("Registration successful!");
-        Navigate("/d/welcome");
+        navigate("/d/welcome");
       } else {
         alert("Error occurred during registration.");
       }

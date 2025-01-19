@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { BaseURL } from "../utils/BaseURL";
 
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);
@@ -32,7 +33,7 @@ const MultiStepForm = () => {
     setError(""); // Reset previous errors
     try {
       const response = await axios.post(
-        "https://moovr-api.vercel.app/api/v1/auth/verify-phone",
+        `${BaseURL}/auth/verify-phone`,
         { phone: formData.phone },
         {
           headers: {
@@ -48,7 +49,10 @@ const MultiStepForm = () => {
       const errorMessage =
         err.response?.data?.message ||
         `Server Error: ${err.response?.status || "Unknown Error"}`;
-      console.error("Error during OTP generation:", err.response || err.message);
+      console.error(
+        "Error during OTP generation:",
+        err.response || err.message
+      );
       setError(errorMessage); // Show the error to the user
     }
   };
@@ -59,7 +63,7 @@ const MultiStepForm = () => {
     setError(""); // Reset previous errors
     try {
       const response = await axios.post(
-        "https://moovr-api.vercel.app/api/v1/auth/verify-otp",
+        "${BaseURL}/auth/verify-otp",
         {
           phone: formData.phone,
           otp: formData.otp,
@@ -76,7 +80,10 @@ const MultiStepForm = () => {
       const errorMessage =
         err.response?.data?.message ||
         `Server Error: ${err.response?.status || "Unknown Error"}`;
-      console.error("Error during OTP verification:", err.response || err.message);
+      console.error(
+        "Error during OTP verification:",
+        err.response || err.message
+      );
       setError(errorMessage); // Show the error to the user
     }
   };
@@ -86,15 +93,11 @@ const MultiStepForm = () => {
     e.preventDefault();
     setError(""); // Reset previous errors
     try {
-      const response = await axios.post(
-        "https://moovr-api.vercel.app/api/v1/auth/register",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.post("${BaseURL}/auth/register", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log("Registration Successful:", response.data);
       alert("Registration completed successfully!");
     } catch (err) {
@@ -129,7 +132,9 @@ const MultiStepForm = () => {
       {step === 2 && (
         <form onSubmit={handleVerifyOtp}>
           <h2>Step 2: Verify OTP</h2>
-          <p>OTP has been sent to {formData.phone}. Please check your messages.</p>
+          <p>
+            OTP has been sent to {formData.phone}. Please check your messages.
+          </p>
           <div>
             <label>OTP:</label>
             <input

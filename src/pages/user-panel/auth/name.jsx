@@ -1,15 +1,50 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { BaseURL } from "../../../utils/BaseURL";
 
 const Name = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle submission logic here
-    console.log("First Name:", firstName);
-    console.log("Last Name:", lastName);
+
+    // Get userData from localStorage
+    const userData = JSON.parse(localStorage.getItem("userData"));
+
+    if (!userData || !userData.phone) {
+      toast.error("Phone number not found. Please try again.");
+      console.error("User data or phone is missing in localStorage");
+      return;
+    }
+
+    const { phone } = userData;
+
+    // Prepare the data to send
+    const payload = {
+      firstName,
+      lastName,
+      role: "user",
+      phone,
+    };
+
+    try {
+      // API call
+      const response = await axios.post(`${BaseURL}/v1/auth/register`, payload);
+
+      if (response.status === 200) {
+        toast.success("Registration successful!");
+        navigate("/ride"); // Navigate to the rides page
+      } else {
+        throw new Error(response.data.message || "Registration failed");
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      toast.error(error.response?.data?.message || "An error occurred.");
+    }
   };
 
   return (
@@ -39,14 +74,12 @@ const Name = () => {
             onChange={(e) => setLastName(e.target.value)}
             className="w-full px-4 py-2 border rounded-full bg-gray-100 focus:outline-none"
           />
-          <Link to={"/ride"}>
-            <button
-              type="submit"
-              className="w-full py-3 mt-4 bg-purple-500 text-white rounded-full text-lg hover:bg-purple-600"
-            >
-              Done
-            </button>
-          </Link>
+          <button
+            type="submit"
+            className="w-full py-3 mt-4 bg-purple-500 text-white rounded-full text-lg hover:bg-purple-600"
+          >
+            Done
+          </button>
         </form>
       </div>
     </div>
