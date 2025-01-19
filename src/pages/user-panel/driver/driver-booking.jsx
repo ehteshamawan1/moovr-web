@@ -25,13 +25,13 @@ const DriverBooking = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-    
+
         if (!response.ok) {
           const text = await response.text();
           console.error("Error response body:", text);
           throw new Error(`API error: ${response.status} ${response.statusText}`);
         }
-    
+
         if (response.headers.get("content-type")?.includes("application/json")) {
           const data = await response.json();
           setBookings(data.bookings || []);
@@ -45,7 +45,7 @@ const DriverBooking = () => {
         setLoading(false);
       }
     };
-    
+
 
     fetchBookings();
   }, []);
@@ -127,15 +127,15 @@ const DriverBooking = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 justify-center">
             {bookings.map((booking) => (
-    <DriverCard
-    key={booking._id}
-    id={booking._id} // Pass the booking ID here
-    name={booking.carName}
-    rating={booking.driver.rating || 4.5} // Example rating
-    price={booking.totalPrice}
-    availability={booking.status}
-    carTypes={["Suv", "Sedan"]} // Example car types
-  />
+              <DriverCard
+                key={booking._id}
+                id={booking._id} // Pass the booking ID here
+                name={booking.carName}
+                rating={booking.driver.rating || 4.5} // Example rating
+                price={booking.totalPrice}
+                availability={booking.status}
+                carTypes={["Suv", "Sedan"]} // Example car types
+              />
             ))}
           </div>
         )}

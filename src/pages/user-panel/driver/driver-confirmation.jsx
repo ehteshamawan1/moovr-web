@@ -33,7 +33,7 @@ const DriverConfirmation = () => {
   const handleConfirm = async () => {
     setLoading(true);
     setError("");
-  
+
     if (!formData.driverId) {
       setError("Driver ID is missing.");
       setLoading(false);
@@ -54,21 +54,21 @@ const DriverConfirmation = () => {
         },
         {
           headers: {
-            Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Use a valid token
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Use a valid token
             "Content-Type": "application/json",
           },
         }
       );
-  
-      console.log("API Response:", response.data);
+
       if (response.data.message === "Driver booked successfully") {
         alert("Driver booked successfully!");
         navigate("/driver/start");
       }
     } catch (err) {
-      console.error("Error booking driver:", err.response?.data || err.message);
       setError(
-        err.response?.data?.message || "An unexpected error occurred. Please try again."
+        err.response?.data?.message ||
+          "An unexpected error occurred. Please try again."
       );
     } finally {
       setLoading(false);
@@ -78,14 +78,8 @@ const DriverConfirmation = () => {
   return (
     <div className="min-h-screen w-full">
       <Header />
-<<<<<<< HEAD
       <div className="relative min-h-[800px] h-screen w-full">
-=======
-
-      {/* Main Content */}
-      <div className=" relative min-h-[800px] h-screen w-full">
         {/* Map Background */}
->>>>>>> refs/remotes/origin/main
         <div className="absolute inset-0 w-full h-full">
           <img
             title="Map"
@@ -93,13 +87,9 @@ const DriverConfirmation = () => {
             className="w-full h-full object-cover"
           />
         </div>
-<<<<<<< HEAD
-        <div className="absolute top-20 left-6 space-y-4">
-=======
 
         {/* Floating Card Section */}
-        <div className=" absolute top-20 left-6  space-y-4 ">
->>>>>>> refs/remotes/origin/main
+        <div className="absolute top-20 left-6 space-y-4">
           <button
             onClick={() => navigate(-1)}
             className="flex gap-3 items-center mb-8 cursor-pointer py-2 px-3 rounded-[12px] w-fit hover:bg-gray-100"
@@ -139,6 +129,8 @@ const DriverConfirmation = () => {
             </div>
           </div>
         </div>
+
+        {/* Price and Confirm Section */}
         <div className="absolute bottom-20 right-6 min-w-[400px] space-y-4">
           <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center space-y-4">
             <div className="w-full flex justify-between items-center">
@@ -147,19 +139,10 @@ const DriverConfirmation = () => {
                 ₦7.80<span className="text-gray-500 text-sm">/hour</span>
               </p>
             </div>
-<<<<<<< HEAD
             <button
               onClick={handleConfirm}
               className="bg-purple-500 text-center text-white py-3 w-full rounded-full text-lg font-semibold hover:bg-purple-600"
               disabled={loading}
-=======
-
-            {/* Confirm Button */}
-
-            <Link
-              to={"/driver/start"}
-              className="bg-purple-500 text-center text-white py-3 w-full rounded-full text-lg font-semibold hover:bg-purple-600"
->>>>>>> refs/remotes/origin/main
             >
               {loading ? "Booking..." : "Confirm"}
             </button>

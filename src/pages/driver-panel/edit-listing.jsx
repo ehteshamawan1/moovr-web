@@ -23,11 +23,7 @@ export default function EditListing() {
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace this with your actual or dummy token for testing
 
       const response = await axios.get(
-<<<<<<< HEAD
         `https://moovr-api.vercel.app/api/v1/cars/list/${id}`,
-=======
-        `https://moovr-api.vercel.app/api/v1/cars/list/677e53543421ee75486fd748`,
->>>>>>> refs/remotes/origin/main
         {
           headers: {
             Authorization: `Bearer ${dummyToken}`,

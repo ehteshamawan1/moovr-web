@@ -19,59 +19,39 @@ export default function Listings() {
 
   // Fetch listings from API
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user")); // Parse the stored string into an object
-    const token = localStorage.getItem("token");
-    let id;
-    if (user && user._id) {
-      id = user._id;
-      console.log(id);
-    } else {
-      console.log("User or _id not found in localStorage.");
-    }
-
     const fetchListings = async () => {
       setLoading(true);
       try {
-<<<<<<< HEAD
         const response = await fetch("https://moovr-api.vercel.app/api/v1/cars/list", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-=======
-        const response = await fetch(
-          `https://moovr-api.vercel.app/api/v1/cars/driver/${id}/cars`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            withCredentials: true,
-          }
-        );
->>>>>>> refs/remotes/origin/main
         if (!response.ok) {
           throw new Error("Failed to fetch listings");
         }
         const data = await response.json();
-
+        
         // Log the entire response to inspect the structure
         console.log(data);
-
-        setListings(data?.carListings);
-
+  
+        setListings(data.carListings || []);
+        
         // Log the IDs of all listings
         data.carListings.forEach((listing) => {
           console.log("Listing ID:", listing.id);
         });
+        
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchListings();
   }, [token]);
+  
 
   // Handle status badge colors
   const getStatusColor = (status) => {
@@ -89,15 +69,12 @@ export default function Listings() {
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this listing?")) return;
     try {
-      const response = await fetch(
-        `https://moovr-api.vercel.app/api/v1/cars/listings/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`https://moovr-api.vercel.app/api/v1/cars/listings/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!response.ok) throw new Error("Failed to delete listing");
       setListings((prev) => prev.filter((listing) => listing.id !== id));
     } catch (err) {
@@ -132,9 +109,7 @@ export default function Listings() {
               >
                 {filter}
                 <FiChevronDown
-                  className={`transition-transform ${
-                    isDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
                 />
               </button>
 
@@ -163,10 +138,7 @@ export default function Listings() {
           {listings
             .filter((listing) => filter === "All" || listing.status === filter)
             .map((listing) => (
-              <div
-                key={listing.id}
-                className="bg-white border border-gray-200 rounded-lg p-6"
-              >
+              <div key={listing.id} className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="flex items-start gap-6">
                   <div className="relative w-1/2">
                     <img
@@ -186,9 +158,7 @@ export default function Listings() {
                   <div className="w-1/2 space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-semibold text-lg">
-                          {listing.vehicleName}
-                        </h3>
+                        <h3 className="font-semibold text-lg">{listing.vehicleName}</h3>
                         <p className="text-sm text-gray-500">
                           {listing.make} {listing.model}
                         </p>
@@ -209,7 +179,7 @@ export default function Listings() {
                         </button>
                       </Link>
                       <button
-                        onClick={() => handleDelete(listing._id)}
+                        onClick={() => handleDelete(listing.id)}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
                       >
                         <FiTrash2 className="w-5 h-5" />
