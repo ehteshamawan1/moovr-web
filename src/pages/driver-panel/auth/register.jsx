@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
 const DriverRegister = () => {
   const location = useLocation();
@@ -13,19 +15,33 @@ const DriverRegister = () => {
     console.log("Selected Role:", role); // Log the selected role
   }, [role]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let userData = {
-      phone: phoneNumber,
-    };
+    try {
+      const response = await axios.post(
+        "https://moovr-api.vercel.app/api/v1/auth/verify-phone",
+        { phone: phoneNumber },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-    localStorage.setItem("userData", JSON.stringify(userData));
-    navigate("/d/verification");
+      toast.success("OTP requested successfully!");
+
+      let userData = {
+        phone: phoneNumber,
+      };
+
+      localStorage.setItem("userData", JSON.stringify(userData));
+      navigate("/d/verification");
+    } catch (error) {
+      toast.error("Error requesting OTP. Please try again.");
+      console.error("Error requesting OTP:", error);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Toaster />
       <div className="bg-white md:shadow-lg rounded-lg overflow-hidden max-w-5xl h-[550px] grid md:grid-cols-2">
         <div className="p-8 w-96 mx-auto">
           <h2 className="text-2xl font-bold mb-4">Enter your mobile number</h2>
