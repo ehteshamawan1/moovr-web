@@ -116,7 +116,6 @@ const DriverBooking = () => {
             )}
           </div>
         </div>
-<<<<<<< HEAD
 
         {/* Bookings Section */}
         {loading ? (
@@ -153,7 +152,6 @@ const DriverBooking = () => {
             />
           ))}
         </div>
->>>>>>> refs/remotes/origin/main
       </div>
     </div>
   );
