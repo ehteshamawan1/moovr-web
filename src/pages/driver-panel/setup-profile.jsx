@@ -50,7 +50,7 @@ export default function SetupProfile() {
           >
             <FaCloudUploadAlt className="text-gray-400 text-4xl mb-3" />
             <p className="text-gray-500 text-sm">
-              {file ? file.name : "Upload CNIC Front side"}
+              {file ? file.name : "Upload Profile Picture"}
             </p>
             <input
               id="file-input"

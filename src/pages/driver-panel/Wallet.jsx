@@ -36,7 +36,7 @@ const DriverWallet = () => {
     <div className="h-screen  w-full ">
       {/* Header */}
       <Header />
-      <section className="p-6 md:p-12">
+      <section className="max-w-[1180px] mx-auto p-6 md:p-12">
         {/* Back Button */}
         <div className="flex items-center mb-4 cursor-pointer">
           <FaArrowLeft className="text-lg mr-2" />

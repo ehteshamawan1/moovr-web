@@ -1,13 +1,12 @@
-"use client";
-
+import { useState } from "react";
 import { FiUpload } from "react-icons/fi";
 import Header from "../../components/driver-panel/header";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function CreateListing() {
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [previewUrls, setPreviewUrls] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null); // Single image
+  const [previewUrl, setPreviewUrl] = useState(null); // Preview URL for the single image
   const [formData, setFormData] = useState({
     vehicleName: "",
     make: "",
@@ -19,15 +18,11 @@ export default function CreateListing() {
   const navigate = useNavigate();
 
   const handleImageUpload = (event) => {
-    const files = event.target.files;
-    if (!files) return;
+    const file = event.target.files[0]; // Only handle the first file
+    if (!file) return;
 
-    const newFiles = Array.from(files);
-    setSelectedImages((prev) => [...prev, ...newFiles]);
-
-    // Create preview URLs for the new images
-    const newPreviewUrls = newFiles.map((file) => URL.createObjectURL(file));
-    setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    setSelectedImage(file);
+    setPreviewUrl(URL.createObjectURL(file)); // Create preview URL
   };
 
   const handleInputChange = (e) => {
@@ -36,8 +31,8 @@ export default function CreateListing() {
   };
 
   const handleSubmit = async () => {
-    const token = "your-auth-token"; // Replace with the actual token
     const url = "https://moovr-api.vercel.app/api/v1/cars/list"; // Backend API URL
+    const token = localStorage.getItem("token"); // Retrieve token from localStorage
 
     const data = new FormData();
     data.append("vehicleName", formData.vehicleName);
@@ -45,30 +40,31 @@ export default function CreateListing() {
     data.append("model", formData.model);
     data.append("description", formData.description);
     data.append("price", formData.price);
-    selectedImages.forEach((image, index) => {
-      data.append("image", image); // Sending images as files
-    });
+
+    if (selectedImage) {
+      data.append("image", selectedImage); // Append single image
+    } else {
+      alert("Please upload an image.");
+      return;
+    }
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
+      const response = await axios.post(url, data, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
-        body: data,
+        withCredentials: true,
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        alert("Car listing created successfully");
-        console.log(result);
-      } else {
-        alert(`Error: ${result.message}`);
-      }
+      alert("Car listing created successfully");
+      console.log(response.data);
     } catch (error) {
       console.error("Error while creating the car listing:", error);
-      alert("An error occurred while creating the listing. Please try again.");
+      alert(
+        error.response?.data?.message ||
+          "An error occurred while creating the listing. Please try again."
+      );
     }
   };
 
@@ -85,17 +81,12 @@ export default function CreateListing() {
             onClick={() => document.getElementById("imageUpload")?.click()}
             className="bg-gray-50 rounded-lg p-6 flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-gray-200 cursor-pointer relative overflow-hidden"
           >
-            {previewUrls.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4 w-full">
-                {previewUrls.map((url, index) => (
-                  <img
-                    key={index}
-                    src={url}
-                    alt={`Preview ${index + 1}`}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                ))}
-              </div>
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="w-full h-48 object-cover rounded-lg"
+              />
             ) : (
               <>
                 <FiUpload className="w-8 h-8 text-gray-400 mb-4" />
@@ -112,7 +103,6 @@ export default function CreateListing() {
               className="hidden"
               id="imageUpload"
               accept=".jpg,.jpeg,.webp,.png"
-              multiple
               onChange={handleImageUpload}
             />
           </div>

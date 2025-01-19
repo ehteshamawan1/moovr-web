@@ -1,50 +1,55 @@
-import React, { useState } from "react";
-import IntlTelInput from "react-intl-tel-input";
-import "react-intl-tel-input/dist/main.css";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 const DriverRegister = () => {
+  const location = useLocation();
+  const { role } = location.state || { role: "driver" }; // Default to driver
   const [phoneNumber, setPhoneNumber] = useState("");
+  const navigate = useNavigate();
 
-  const handlePhoneNumberChange = (isValid, value, countryData) => {
-    setPhoneNumber(value);
-  };
+  useEffect(() => {
+    console.log("Selected Role:", role); // Log the selected role
+  }, [role]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Phone Number:", phoneNumber);
+
+    let userData = {
+      phone: phoneNumber,
+    };
+
+    localStorage.setItem("userData", JSON.stringify(userData));
+    navigate("/d/verification");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden max-w-5xl h-[550px] grid md:grid-cols-2">
+      <div className="bg-white md:shadow-lg rounded-lg overflow-hidden max-w-5xl h-[550px] grid md:grid-cols-2">
         <div className="p-8 w-96 mx-auto">
           <h2 className="text-2xl font-bold mb-4">Enter your mobile number</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <IntlTelInput
+            <PhoneInput
+              country={"ng"}
               preferredCountries={["ng", "us", "gb"]}
-              defaultCountry={"ng"}
-              containerClassName="intl-tel-input w-full"
-              inputClassName="w-full border-2 border-gray-200 rounded-full p-2 focus:outline-none focus:bg-none hover:bg-none"
-              fieldId="phoneNumber"
-              onPhoneNumberChange={handlePhoneNumberChange}
+              value={phoneNumber}
+              onChange={setPhoneNumber}
+              inputClass="w-full border-2 border-gray-200 rounded-full p-2 focus:outline-none"
             />
-            <Link to={"/d/verification"}>
-              <button
-                type="submit"
-                className="w-full py-2 mt-3 bg-purple-500 text-white rounded-full hover:bg-purple-600"
-              >
-                Continue
-              </button>
-            </Link>
+            <button
+              type="submit"
+              className="w-full py-2 mt-3 bg-purple-500 text-white rounded-full hover:bg-purple-600"
+            >
+              Continue
+            </button>
           </form>
           <div className="text-center mt-4">
             <p>
               Already have an account?{" "}
-              <Link to={"/login"} className="text-purple-500">
+              <a href="/login" className="text-purple-500">
                 Log In
-              </Link>
+              </a>
             </p>
           </div>
           <div className="flex items-center my-4">
@@ -75,15 +80,15 @@ const DriverRegister = () => {
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-4">
-            By proceeding, you consent to get calls, WhatsApp or SMS messages,
-            including by automated dialer, from MovoR and its affiliates to the
-            number provided. Text "STOP" to 67890 to opt out.
+            By proceeding, you consent to get calls, WhatsApp, or SMS messages,
+            including by automated dialer, from our company and its affiliates
+            to the number provided. Text "STOP" to opt out.
           </p>
         </div>
         <div className="hidden md:block">
           <img
             src="/driver/auth/signup-bg.png"
-            alt="Login Graphic"
+            alt="Signup Background"
             className="object-cover h-full w-full"
           />
         </div>

@@ -5,10 +5,15 @@ import { Link } from "react-router-dom";
 
 const Go = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow bg-gray-100">
-        <div className="relative h-[80vh]">
+    <div className="relative h-screen flex flex-col">
+      <div
+        className="absolute top-0 right-0 left-0 z-10
+      "
+      >
+        <Header />
+      </div>
+      <main className="flex-grow h-full bg-gray-100">
+        <div className=" h-full">
           <img
             src="/map.png"
             alt="Map"

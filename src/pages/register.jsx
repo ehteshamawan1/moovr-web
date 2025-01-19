@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import IntlTelInput from "react-intl-tel-input";
-import "react-intl-tel-input/dist/main.css";
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 const Register = () => {
   const [phoneNumber, setPhoneNumber] = useState("");

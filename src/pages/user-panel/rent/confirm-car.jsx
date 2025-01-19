@@ -1,11 +1,48 @@
-import React from "react";
-import Header from "../../../components/user-panel/header";
-import { BiArrowBack } from "react-icons/bi";
+import React, { useState } from "react";
 import { FaMapMarkerAlt } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import Header from "../../../components/user-panel/header";
 
 const ConfirmCar = () => {
+  const { id } = useParams(); // Get the car ID from the URL parameters
+  const [deliveryLocation, setDeliveryLocation] = useState("");
+  const [rentStartDate, setRentStartDate] = useState("");
+  const [rentEndDate, setRentEndDate] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleRentCar = async () => {
+    setLoading(true);
+
+    try {
+      const response = await fetch("https://moovr-api.vercel.app/api/v1/rent/rent", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Replace with your dynamic token
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          carId: id,
+          deliveryLocation,
+          rentStartDate,
+          rentEndDate,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.message === "Car rented successfully") {
+        // Redirect to a confirmation page or show success message
+        navigate("/rent/car/booked");
+      } else {
+        alert("Failed to rent the car");
+      }
+    } catch (error) {
+      console.error("Error renting car:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="h-screen w-screen bg-gray-50">
@@ -13,13 +50,13 @@ const ConfirmCar = () => {
       <Header />
 
       {/* Main Content */}
-      <div className="p-6">
+      <div className="max-w-[1180px] mx-auto p-6">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
           className="flex gap-3 items-center mb-8 cursor-pointer py-2 px-3 rounded-[12px] w-fit hover:bg-gray-100"
         >
-          <BiArrowBack size={23} /> Back
+          <FaMapMarkerAlt size={23} /> Back
         </button>
 
         {/* Car Image Section */}
@@ -36,17 +73,17 @@ const ConfirmCar = () => {
           </div>
         </div>
 
-        {/* Details Section */}
+        {/* Rent Details Section */}
         <div className="bg-white rounded-2xl shadow-md border-[1.4px] border-gray-200 p-6">
           <div className="grid grid-cols-3 items-end gap-6">
             {/* Delivery Location */}
             <div>
-              <label className="block text-gray-500 mb-2">
-                Delivery Location
-              </label>
+              <label className="block text-gray-500 mb-2">Delivery Location</label>
               <div className="relative">
                 <input
                   type="text"
+                  value={deliveryLocation}
+                  onChange={(e) => setDeliveryLocation(e.target.value)}
                   placeholder="Select delivery point"
                   className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none"
                 />
@@ -56,12 +93,11 @@ const ConfirmCar = () => {
 
             {/* Rent Start Date/Time */}
             <div>
-              <label className="block text-gray-500 mb-2">
-                Rent Date and Time
-              </label>
+              <label className="block text-gray-500 mb-2">Rent Date and Time</label>
               <input
-                type="text"
-                placeholder="Rent start date/time"
+                type="datetime-local"
+                value={rentStartDate}
+                onChange={(e) => setRentStartDate(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none"
               />
             </div>
@@ -69,8 +105,9 @@ const ConfirmCar = () => {
             {/* Rent End Date/Time */}
             <div className="mt-6 md:mt-0">
               <input
-                type="text"
-                placeholder="Rent end date/time"
+                type="datetime-local"
+                value={rentEndDate}
+                onChange={(e) => setRentEndDate(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none"
               />
             </div>
@@ -78,12 +115,13 @@ const ConfirmCar = () => {
 
           {/* Confirm Button */}
           <div className="flex justify-center mt-8">
-            <Link
-              to={"/rent/car/booked"}
+            <button
+              onClick={handleRentCar}
               className="bg-purple-500 text-white py-3 px-16 rounded-full font-medium hover:bg-purple-600"
+              disabled={loading}
             >
-              Confirm
-            </Link>
+              {loading ? "Processing..." : "Confirm"}
+            </button>
           </div>
         </div>
       </div>

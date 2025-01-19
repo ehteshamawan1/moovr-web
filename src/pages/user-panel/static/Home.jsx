@@ -10,7 +10,7 @@ import Download from "../../../components/user-panel/static/Download";
 
 const HomePage = () => {
   return (
-    <div>
+    <div className="">
       <Navbar />
       <div className="max-w-[1180px] mx-auto text-start">
         <HeroSection />

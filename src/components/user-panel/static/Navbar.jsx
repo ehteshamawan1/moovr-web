@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 
 const Navbar = () => {
   return (
-    <nav className="flex justify-between items-center px-8 py-6  bg-white">
+    <nav className="flex max-w-[1280px] mx-auto justify-between items-center px-8 py-6  bg-white">
       {/* Logo */}
       <div>
         <img src="/images/logo.svg" alt="MoovR Logo" className="h-8" />
       </div>
       {/* Links */}
-      <div className="hidden md:flex space-x-8 text-gray-700 font-medium">
+      {/* <div className="hidden md:flex space-x-8 text-gray-700 font-medium">
         <a href="#" className="hover:text-purple-500">
           Home
         </a>
@@ -25,7 +25,7 @@ const Navbar = () => {
         <a href="#" className="hover:text-purple-500">
           About
         </a>
-      </div>
+      </div> */}
       {/* Buttons */}
       <div className="space-x-4">
         <Link to={"/choose"} className="text-gray-700 font-medium">

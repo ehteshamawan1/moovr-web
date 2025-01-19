@@ -56,13 +56,13 @@ const Bill = () => {
   ];
 
   return (
-    <div className="h-screen  w-screen ">
+    <div className="h-screen w-screen overflow-x-hidden">
       {/* Header */}
       <Header />
 
-      <div className="p-6 md:p-12">
+      <div className="max-w-[1180px] mx-auto p-6 md:p-12">
         {/* Back Button */}
-        <div className="flex items-center  mb-4 cursor-pointer">
+        <div className="flex items-center mb-4 cursor-pointer">
           <FaArrowLeft className="text-lg mr-2" />
           <span className="text-sm font-medium">Package delivery</span>
         </div>

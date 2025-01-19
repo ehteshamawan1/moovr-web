@@ -7,14 +7,9 @@ const Reserve = () => {
   return (
     <div>
       <Header />
-      <div className="grid md:grid-cols-2 min-h-[500px] items-center p-4">
+      <div className="max-w-[1180px] mx-auto min-h-[500px] items-center p-4">
         <RideForm pageLink={"/reserve/ride"} />
         {/* <Map /> */}
-        <img
-          src="/images/map-img.png"
-          alt=""
-          className="h-[422px] rounded-[12px]"
-        />
       </div>
       <Carousel />
     </div>

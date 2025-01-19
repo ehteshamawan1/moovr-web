@@ -45,7 +45,7 @@ export default function Welcome() {
             Here's what you need to do to setup your account.
           </p>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid lg:grid-cols-2 gap-4">
             {steps.map((step) => (
               <Link to={step.key}>
                 <button

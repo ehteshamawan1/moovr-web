@@ -36,7 +36,7 @@ const DriverVerification = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-[1180px] min-h-[500px] flex items-center bg-white rounded-2xl shadow-md p-8 relative overflow-hidden">
         {/* Bottom right curve */}
-        <div className="absolute bottom-0 left-0 h-full">
+        <div className=" absolute bottom-0 left-0 h-full">
           <img
             src="/driver/driver-bg-img-1.svg"
             alt=""
@@ -44,7 +44,7 @@ const DriverVerification = () => {
           />
         </div>
         {/* Top left curve */}
-        <div className="absolute top-0 right-0 ">
+        <div className="hidden lg:block absolute top-0 right-0 ">
           <img
             src="/driver/auth/welcome.svg"
             alt=""

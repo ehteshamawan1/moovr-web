@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "../pages/user-panel/auth/login";
 import Signup from "../pages/user-panel/auth/register";
@@ -31,7 +32,7 @@ import BillDetails from "../pages/user-panel/bill/bill-details";
 import Activity from "../pages/user-panel/activity/activity";
 import PrivacyPolicy from "../pages/user-panel/static/privacy-policy";
 import Languages from "../pages/user-panel/static/languages";
-import Settings from "../pages/user-panel/static/Settings";
+import Settings from "../pages/user-panel/static/settings.jsx";
 import Details from "../pages/user-panel/reserve/details";
 import Successful from "../pages/user-panel/reserve/successful";
 import Reserve from "../pages/user-panel/reserve/reserve";
@@ -87,12 +88,15 @@ import DriverPrivacyPolicy from "../pages/driver-panel/static/privacy-policy.jsx
 import DriverLanguages from "../pages/driver-panel/static/languages.jsx";
 import DriverActivity from "../pages/driver-panel/activity/activity.jsx";
 import Dashboard from "../pages/driver-panel/dashboard.jsx";
-
+import MultiStepForm from "../pages/registers.jsx";
 const App = () => {
+  const [userData, setUserData] = useState({});
+
   return (
     <Router>
       <div>
         <Routes>
+          <Route path="/registers" element={<MultiStepForm/>}/>
           <Route path="/" element={<HomePage />} />
           <Route path="/choose" element={<ChoosePanel />} />
           <Route path="/login" element={<Login />} />
@@ -124,8 +128,8 @@ const App = () => {
           <Route path="/ride/review" element={<ReviewScreen />} />
           <Route path="/ride/thank-you" element={<ThankYouScreen />} />
           <Route path="/rent/cars" element={<RideCars />} />
-          <Route path="/rent/car/details" element={<CarDetail />} />
-          <Route path="/rent/car/confirm" element={<ConfirmCar />} />
+          <Route path="/rent/car/details/:id" element={<CarDetail />} />
+          <Route path="/rent/car/confirm/:id" element={<ConfirmCar />} />
           <Route path="/rent/car/booked" element={<Booked />} />
           <Route path="/rent/car/detail" element={<RideDetail />} />
           <Route
@@ -133,7 +137,7 @@ const App = () => {
             element={<StartDestinationScreen />}
           />
           <Route path="/drivers" element={<DriverBooking />} />
-          <Route path="/driver/confirmation" element={<DriverConfirmation />} />
+          <Route path="/driver/confirmation/:driverId" element={<DriverConfirmation />} />
           <Route path="/driver/start" element={<DriverStart />} />
           <Route path="/driver/start-journey" element={<StartJourney />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -149,10 +153,20 @@ const App = () => {
           {/* Driver Panel Routes are here */}
           <Route path="/d/signup" element={<DriverRegister />} />
           <Route path="/d/verification" element={<DriverVerification />} />
-          <Route path="/d/name" element={<DriverName />} />
-          <Route path="/d/earn" element={<Earn />} />
+          {/* <Route path="/d/name" element={<DriverName />} /> */}
+          <Route
+            path="/d/name"
+            element={<DriverName setUserData={setUserData} />}
+          />
+
+          {/* <Route path="/d/earn" element={<Earn />} setUserData={setUserData} /> */}
+          <Route path="/d/earn" element={<Earn setUserData={setUserData} />} />
+
           <Route path="/d/earn-types" element={<EarnTypes />} />
-          <Route path="/d/vehicle-types" element={<VehicleType />} />
+          <Route
+            path="/d/vehicle-types"
+            element={<VehicleType setUserData={setUserData} />}
+          />
           <Route path="/d/account-types" element={<AccountType />} />
           <Route path="/d/welcome" element={<Welcome />} />
           <Route path="/d/" element={<Go />} />

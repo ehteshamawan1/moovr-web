@@ -110,7 +110,7 @@ export default function Revenue() {
               )}
             </div>
           </div>
-          <div className="h-[300px]">
+          <div className=" h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={data}
@@ -122,6 +122,7 @@ export default function Revenue() {
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
+                  tickMargin={0}
                 />
                 <YAxis
                   stroke="#888888"
@@ -129,6 +130,7 @@ export default function Revenue() {
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(value) => `${value}`}
+                  tickMargin={0}
                 />
                 <defs>
                   <linearGradient

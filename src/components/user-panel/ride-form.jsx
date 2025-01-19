@@ -99,9 +99,9 @@ const RideForm = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg w-full max-w-6xl mx-auto mt-8">
+    <div className="bg-white p-8 rounded-lg w-full max-w-6xl mx-auto ">
       <h3 className="text-xl font-semibold mb-4">Get your ride</h3>
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col items-center lg:flex-row gap-6">
         {/* Input Fields */}
         <form className="space-y-6 w-full lg:w-1/2">
           <div className="flex items-center bg-gray-100 rounded-full px-4 py-4">
@@ -139,7 +139,7 @@ const RideForm = () => {
         {/* Map Section */}
         <div
           ref={mapRef}
-          className="w-full lg:w-1/2 h-64 lg:h-auto rounded-lg"
+          className="w-full lg:w-1/2 h-64 lg:h-[250px] xl:h-[350px] rounded-lg"
         ></div>
       </div>
     </div>

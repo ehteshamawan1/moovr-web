@@ -22,7 +22,7 @@ export default function Listings() {
     const fetchListings = async () => {
       setLoading(true);
       try {
-        const response = await fetch("https://moovr-api.vercel.app/api/v1/cars/listings", {
+        const response = await fetch("https://moovr-api.vercel.app/api/v1/cars/list", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -172,7 +172,7 @@ export default function Listings() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-4 pt-4">
-                      <Link to={`/d/vehicle/edit/${listing.id}`}>
+                      <Link to={`/d/vehicle/edit/${listing._id}`}>
                         <button className="flex-1 px-6 py-2 bg-[#8257E9] text-white rounded-full hover:bg-[#7347d5] transition-colors flex items-center justify-center gap-2">
                           <FiEdit className="w-4 h-4" />
                           Edit

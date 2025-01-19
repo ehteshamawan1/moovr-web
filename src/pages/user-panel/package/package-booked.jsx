@@ -4,26 +4,26 @@ import { Link } from "react-router-dom";
 
 const PackageBooked = () => {
   return (
-    <div className="h-screen  w-screen ">
+    <div className="h-screen w-screen">
       {/* Header */}
       <Header />
-      <div className=" bg-white flex flex-col items-center p-6 md:p-12">
+      <div className="max-w-[1180px] mx-auto flex flex-col items-center p-4 md:p-12">
         {/* Header Image */}
-        <div className="w-full max-h-[470px] max-w-7xl mb-10 overflow-hidden rounded-lg">
+        <div className="w-full max-h-[470px] max-w-7xl mb-8 overflow-hidden rounded-lg">
           <img
             src="/images/package-booked-img.jpeg" // Replace with the actual image path
             alt="Package Delivery"
-            className="w-full h-full object-cover "
+            className="w-full h-full object-cover"
           />
         </div>
 
-        <div className="flex ">
+        <div className="flex flex-col md:flex-row w-full gap-8">
           {/* Title and Description */}
-          <div className="text-start mb-10 space-y-3 w-full md:w-2/5">
+          <div className="text-start mb-8 space-y-3 w-full md:w-2/5">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
               Get your package ready!
             </h2>
-            <p className="text-gray-500 w-4/5 pb-5">
+            <p className="text-gray-500 w-full md:w-4/5 pb-5">
               Prepare your package for delivery by securely packing your items
               and labeling them clearly. Ensure all necessary documentation is
               included for a smooth shipping process.
@@ -37,17 +37,22 @@ const PackageBooked = () => {
           </div>
 
           {/* Delivery Details */}
-          <div className="w-full md:w-3/5 max-w-5xl flex justify-between items-center mb-12">
+          <div className="w-full md:w-3/5 max-w-5xl flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
             <div className="text-left">
-              <h3 className=" font-semibold mb-5">Delivery details</h3>
-              <div className="">
+              <h3 className="font-semibold mb-3 md:mb-5">Delivery details</h3>
+              <div>
                 <p>4th Ave Abuja</p>
                 <p className="text-sm text-gray-500">Pickup at 5:30PM</p>
               </div>
             </div>
 
-            <img src="/icons/rent/connection.svg" alt="" />
-            <div className="text-right mt-5">
+            <img
+              src="/icons/rent/connection.svg"
+              alt="Connection"
+              className="w-12 h-12 md:w-auto md:h-auto"
+            />
+
+            <div className="text-left md:text-right mt-5 md:mt-0">
               <p>Abuja Transcorp Hill Station</p>
             </div>
           </div>

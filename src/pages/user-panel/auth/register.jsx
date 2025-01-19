@@ -1,24 +1,23 @@
 import React, { useState } from "react";
-import IntlTelInput from "react-intl-tel-input";
-import "react-intl-tel-input/dist/main.css";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import { Link } from "react-router-dom";
 
 const Register = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
 
-  const handlePhoneNumberChange = (isValid, value, countryData) => {
+  const handlePhoneNumberChange = (value) => {
     setPhoneNumber(value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission
     console.log("Phone Number:", phoneNumber);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden max-w-5xl h-[550px] grid md:grid-cols-2">
+      <div className="bg-white lg:shadow-lg rounded-lg overflow-hidden max-w-5xl h-[550px] grid md:grid-cols-2">
         <div className="hidden md:block">
           <img
             src="/Singup-BG.jpg"
@@ -29,13 +28,12 @@ const Register = () => {
         <div className="p-8 w-96 mx-auto">
           <h2 className="text-2xl font-bold mb-4">Enter your mobile number</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <IntlTelInput
+            <PhoneInput
+              country={"ng"}
               preferredCountries={["ng", "us", "gb"]}
-              defaultCountry={"ng"}
-              containerClassName="intl-tel-input w-full"
-              inputClassName="w-full border-2 border-gray-200 rounded-full p-2 focus:outline-none focus:bg-none hover:bg-none"
-              fieldId="phoneNumber"
-              onPhoneNumberChange={handlePhoneNumberChange}
+              value={phoneNumber}
+              onChange={handlePhoneNumberChange}
+              inputClass="w-full border-2 border-gray-200 rounded-full p-2 focus:outline-none"
             />
             <Link to={"/verification"}>
               <button

@@ -2,11 +2,11 @@ import React from "react";
 import { FaStar } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const DriverBookingCard = ({ name, rating, price, availability, carTypes }) => {
+const DriverBookingCard = ({ id, name, rating, price, availability, carTypes }) => {
   return (
-    <div className="bg-white rounded-2xl shadow-md p-4  w-full m-2 flex flex-col justify-between">
+    <div className="bg-white rounded-2xl shadow-md p-4 w-full m-2 flex flex-col justify-between">
       {/* Driver Info */}
-      <div className="flex items-center space-x-3 w-full ">
+      <div className="flex items-center space-x-3 w-full">
         <img
           src="/images/avatar.png" // Replace with the driver's image
           alt="Driver"
@@ -31,7 +31,7 @@ const DriverBookingCard = ({ name, rating, price, availability, carTypes }) => {
           {carTypes.map((type, index) => (
             <span
               key={index}
-              className="bg-bgGray  px-[10px] py-1 text-[12px] rounded-full text-xs"
+              className="bg-bgGray px-[10px] py-1 text-[12px] rounded-full text-xs"
             >
               {type}
             </span>
@@ -41,7 +41,7 @@ const DriverBookingCard = ({ name, rating, price, availability, carTypes }) => {
 
       {/* Price and Book Button */}
       <div className="flex justify-between items-center mt-4">
-        <Link to={"/driver/confirmation"}>
+        <Link to={`/driver/confirmation/${id}`}>
           <button className="bg-primaryPurple text-white py-2 px-6 rounded-full text-[14px] font-[600]">
             Book
           </button>

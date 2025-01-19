@@ -13,7 +13,7 @@ const Booked = () => {
       {/* Header */}
       <Header />
 
-      <section className="p-6 md:p-12">
+      <section className="max-w-[1180px] mx-auto p-6 ">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}

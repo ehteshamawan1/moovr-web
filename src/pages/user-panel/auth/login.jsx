@@ -1,19 +1,25 @@
 import React, { useState } from "react";
-import IntlTelInput from "react-intl-tel-input";
-import "react-intl-tel-input/dist/main.css";
-import { Link } from "react-router-dom";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
+  const navigate = useNavigate();
 
-  const handlePhoneNumberChange = (isValid, value, countryData) => {
+  const handlePhoneNumberChange = (value) => {
     setPhoneNumber(value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission
     console.log("Phone Number:", phoneNumber);
+    localStorage.setItem("auth_token", phoneNumber); // Save token to localStorage
+
+    // Navigate with a dummy token
+    navigate("/d/setup-license", {
+      state: { token: "+923171150595" }, // Dummy token
+    });
   };
 
   return (
@@ -22,22 +28,19 @@ const Login = () => {
         <div className="p-8 w-96 mx-auto">
           <h2 className="text-2xl font-bold mb-4">Enter your mobile number</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <IntlTelInput
+            <PhoneInput
+              country={"ng"}
               preferredCountries={["ng", "us", "gb"]}
-              defaultCountry={"ng"}
-              containerClassName="intl-tel-input w-full"
-              inputClassName="w-full border-2 border-gray-200 rounded-full p-2 focus:outline-none focus:bg-none hover:bg-none"
-              fieldId="phoneNumber"
-              onPhoneNumberChange={handlePhoneNumberChange}
+              value={phoneNumber}
+              onChange={handlePhoneNumberChange}
+              inputClass="w-full border-2 border-gray-200 rounded-full p-2 focus:outline-none"
             />
-            <Link to={"/verification"}>
-              <button
-                type="submit"
-                className="w-full py-2 mt-3 bg-purple-500 text-white rounded-full hover:bg-purple-600"
-              >
-                Continue
-              </button>
-            </Link>
+            <button
+              type="submit"
+              className="w-full py-2 mt-3 bg-purple-500 text-white rounded-full hover:bg-purple-600"
+            >
+              Continue
+            </button>
           </form>
           <div className="text-center mt-4">
             <p>

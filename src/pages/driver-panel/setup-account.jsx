@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Header from "../../components/driver-panel/header";
 import { FaCloudUploadAlt } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function SetupAccount() {
   const [file, setFile] = useState(null);
@@ -12,16 +13,38 @@ export default function SetupAccount() {
     setFile(e.target.files[0]);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!file) {
-      alert("Please upload a file before confirming.");
+      toast.error("Please upload a file before confirming.");
       return;
     }
-    alert("File uploaded successfully!");
+
+    const formData = new FormData();
+    formData.append("documentType", "cnicFront");
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("https://moovr-api.vercel.app/api/v1/driver/upload-document", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM",
+        },
+      });
+
+      if (response.ok) {
+        toast.success("CNIC front image uploaded successfully!");
+      } else {
+        toast.error("Failed to upload CNIC front image. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("An error occurred while uploading the CNIC front image.");
+    }
   };
 
   return (
-    <div className="w-full  min-h-screen  flex flex-col items-center">
+    <div className="w-full min-h-screen flex flex-col items-center">
       {/* Header */}
       <div className="w-full">
         <Header />
@@ -61,16 +84,17 @@ export default function SetupAccount() {
           </div>
 
           {/* Confirm Button */}
-          <Link to="/d/package">
-            <button
-              onClick={handleConfirm}
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 rounded-lg mt-6 transition"
-            >
-              Confirm
-            </button>
-          </Link>
+          <button
+            onClick={handleConfirm}
+            className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 rounded-lg mt-6 transition"
+          >
+            Confirm
+          </button>
         </div>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer />
     </div>
   );
 }

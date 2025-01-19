@@ -20,6 +20,17 @@ export default function EarnTypes() {
     },
   ];
 
+  const handleOptionClick = (option) => {
+    // Retrieve existing userData from localStorage
+    const userData = JSON.parse(localStorage.getItem("userData")) || {};
+
+    // Update userData with the selected option
+    userData.serviceType = option.title;
+
+    // Save updated userData back to localStorage
+    localStorage.setItem("userData", JSON.stringify(userData));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-[1180px] bg-white rounded-2xl shadow-md p-8 py-24 relative overflow-hidden">
@@ -29,7 +40,7 @@ export default function EarnTypes() {
         </div>
 
         {/* Bottom right curve */}
-        <div className="absolute bottom-0 right-0 h-full">
+        <div className="hidden lg:block absolute bottom-0 right-0 h-full">
           <img
             src="/driver/driver-bg-img-1.svg"
             alt=""
@@ -45,11 +56,12 @@ export default function EarnTypes() {
 
           <div className="grid grid-cols-2 gap-4">
             {options.map((option) => (
-              <Link to={"/d/vehicle-types"}>
-                <button
-                  key={option.title}
-                  className="p-4 bg-gray-50 rounded-lg text-left hover:bg-gray-100 transition-colors"
-                >
+              <Link
+                to={"/d/vehicle-types"}
+                key={option.title}
+                onClick={() => handleOptionClick(option)}
+              >
+                <button className="p-4 bg-gray-50 rounded-lg text-left hover:bg-gray-100 transition-colors">
                   <h3 className="font-medium mb-2">{option.title}</h3>
                   <p className="text-sm text-gray-500">{option.description}</p>
                 </button>

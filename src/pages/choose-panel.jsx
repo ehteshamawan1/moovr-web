@@ -1,3 +1,4 @@
+import React from "react";
 import { Link } from "react-router-dom";
 
 export default function ChoosePanel() {
@@ -8,7 +9,7 @@ export default function ChoosePanel() {
         <div className="absolute bottom-0 left-0 h-full">
           <img
             src="/driver/driver-bg-img-1.svg"
-            alt=""
+            alt="Driver Background"
             className="h-full w-full object-contain"
           />
         </div>
@@ -16,7 +17,7 @@ export default function ChoosePanel() {
         <div className="absolute top-0 right-0">
           <img
             src="/driver/auth/welcome.svg"
-            alt=""
+            alt="Welcome"
             className="transform rotate-90"
           />
         </div>
@@ -31,7 +32,7 @@ export default function ChoosePanel() {
 
           <div className="space-y-4">
             <button className="w-full p-4 bg-gray-50 h-[120px] border border-gray-300 rounded-lg text-left hover:bg-gray-100 transition-colors">
-              <Link to={"/d/signup"}>
+              <Link to={"/d/signup"} state={{ role: "driver" }}>
                 <h3 className="font-medium mb-1">Driver</h3>
                 <p className="text-sm text-gray-500">
                   Create an account to receive ride requests and earn.
@@ -40,7 +41,7 @@ export default function ChoosePanel() {
             </button>
 
             <button className="w-full p-4 bg-gray-50 h-[120px] border border-gray-300 rounded-lg text-left hover:bg-gray-100 transition-colors">
-              <Link to={"/signup"}>
+              <Link to={"/user-register"} state={{ role: "user" }}>
                 <h3 className="font-medium mb-1">User</h3>
                 <p className="text-sm text-gray-500">
                   Create an account to book rides conveniently.

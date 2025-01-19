@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const TermsAndConditions = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
-      <div className="bg-white shadow-lg rounded-lg max-w-7xl w-full p-8">
+      <div className="bg-white  rounded-lg max-w-7xl w-full p-8">
         <h1 className="text-xl font-bold mb-4">MoovR Terms and Conditions</h1>
         <p className="text-gray-700 text-sm mb-4">
           <strong>Effective Date:</strong> October 5, 2024
