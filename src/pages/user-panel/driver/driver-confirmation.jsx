@@ -51,7 +51,7 @@ const DriverConfirmation = () => {
     setError("");
 
     try {
-      const token = "your-jwt-token"; // Replace with a token from a secure source (e.g., localStorage)
+      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace with a token from a secure source (e.g., localStorage)
       if (!token) throw new Error("Authentication token is missing. Please log in again.");
 
       const response = await axios.post(
