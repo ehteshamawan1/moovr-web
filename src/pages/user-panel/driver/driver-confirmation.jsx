@@ -8,18 +8,14 @@ const DriverConfirmation = () => {
   const { driverId } = useParams(); // Extract driverId from URL params
   const navigate = useNavigate();
 
-  // Static userId
-  const userId = "abcdg"; 
-
   // State to manage form data
   const [formData, setFormData] = useState({
-    user: userId, // Static userId
     driver: driverId,
     location: "",
     carName: "",
     carNumber: "",
-    startTime: new Date(), // Default start time
-    endTime: new Date(), // Default end time
+    startTime: new Date().toISOString().slice(0, 16), // Default start time in ISO format
+    endTime: new Date().toISOString().slice(0, 16), // Default end time in ISO format
     paymentMethod: "credit_card", // Default payment method
   });
 
@@ -45,13 +41,18 @@ const DriverConfirmation = () => {
     }
 
     try {
+      const token =        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace this with your actual or dummy token for testing
+      // Retrieve token from localStorage
+      if (!token) {
+        throw new Error("Authentication token is missing. Please log in again.");
+      }
+
       const response = await axios.post(
         "https://moovr-api.vercel.app/api/v1/bookings/book",
         formData,
         {
           headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM",
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -65,11 +66,7 @@ const DriverConfirmation = () => {
       const errorMessage = err.response?.data?.message || "An unexpected error occurred.";
       const errorDetails = err.response?.data?.details || null;
 
-      setError(
-        errorDetails
-          ? `${errorMessage}: ${errorDetails}`
-          : errorMessage
-      );
+      setError(errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage);
     } finally {
       setLoading(false);
     }
