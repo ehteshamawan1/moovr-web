@@ -1,62 +1,42 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import Header from "../../../components/user-panel/header";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { BaseURL } from "../../../utils/BaseURL";
+import toast, { Toaster } from "react-hot-toast";
+import { format } from "date-fns";
 
 const Bill = () => {
-  const bills = [
-    {
-      id: 1,
-      type: "Trip",
-      date: "05/09/2024",
-      price: 256,
-      rating: 5,
-      mapSrc: "bill.png",
-    },
-    {
-      id: 2,
-      type: "Package",
-      date: "05/09/2024",
-      price: 256,
-      rating: 5,
-      mapSrc: "bill.png",
-    },
-    {
-      id: 3,
-      type: "Trip",
-      date: "05/09/2024",
-      price: 256,
-      rating: 5,
-      mapSrc: "bill.png",
-    },
-    {
-      id: 4,
-      type: "Package",
-      date: "05/09/2024",
-      price: 256,
-      rating: 5,
-      mapSrc: "bill.png",
-    },
-    {
-      id: 5,
-      type: "Trip",
-      date: "05/09/2024",
-      price: 256,
-      rating: 5,
-      mapSrc: "bill.png",
-    },
-    {
-      id: 6,
-      type: "Trip",
-      date: "05/09/2024",
-      price: 256,
-      rating: 5,
-      mapSrc: "bill.png",
-    },
-  ];
+  const [bills, setBills] = useState([]);
+
+  useEffect(() => {
+    const fetchBills = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`${BaseURL}/bill`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.status === 200) {
+          setBills(response.data);
+          console.log(response.data);
+        } else {
+          toast.error("Failed to fetch bills. Please try again.");
+        }
+      } catch (error) {
+        toast.error("Error fetching bills. Please try again.");
+        console.error("Error fetching bills:", error);
+      }
+    };
+
+    fetchBills();
+  }, []);
 
   return (
     <div className="h-screen w-screen overflow-x-hidden">
+      <Toaster />
       {/* Header */}
       <Header />
 
@@ -72,13 +52,16 @@ const Bill = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {bills.map((bill) => (
               <Link
-                to={"/bill/details"}
+                to={`/bill/details/${bill.id}`}
+                state={{ bill }}
                 key={bill.id}
                 className="border rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
               >
                 <div className="relative">
                   <img
-                    src={`/images/${bill.mapSrc}`}
+                    src={`/images/${
+                      bill.type === "ride" ? "map-img.png" : "bill.png"
+                    }`}
                     alt={`${bill.type} Map`}
                     className="w-full h-40 object-cover"
                   />
@@ -87,14 +70,18 @@ const Bill = () => {
                   </div>
                 </div>
                 <div className="flex justify-between items-end p-3">
-                  <div className="text-[16px] font-bold">{bill.date}</div>
+                  <div className="text-[16px] font-bold">
+                    {bill.createdAt
+                      ? format(new Date(bill.createdAt), "dd/MM/yyyy")
+                      : "Invalid Date"}
+                  </div>
                   <div>
                     <div className="text-[12px] font-bold text-gray-800 ">
-                      ₦ <span className="text-[16px]">{bill.price}</span>
+                      ₦ <span className="text-[16px]">{bill.fare}</span>
                     </div>
-                    <div className="text-yellow-500 text-lg mt-1">
+                    {/* <div className="text-yellow-500 text-lg mt-1">
                       {"★".repeat(bill.rating)}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </Link>

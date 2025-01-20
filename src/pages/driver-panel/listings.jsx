@@ -1,10 +1,11 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { FiChevronDown, FiTrash2, FiEdit } from "react-icons/fi";
 import Header from "../../components/driver-panel/header";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { BaseURL } from "../../utils/BaseURL";
+import { toast } from "react-hot-toast";
+import DeleteModal from "../../components/driver-panel/listings/deleteModal"; // Import the modal component
 
 export default function Listings() {
   const [filter, setFilter] = useState("All");
@@ -12,47 +13,44 @@ export default function Listings() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [listingToDelete, setListingToDelete] = useState(null); // Store the listing to delete
 
   const navigate = useNavigate();
-
-  // Retrieve token from localStorage
-  const token = localStorage.getItem("auth_token");
+  const token = localStorage.getItem("token");
+  const driverId = JSON.parse(localStorage.getItem("user"))?._id;
 
   // Fetch listings from API
   useEffect(() => {
     const fetchListings = async () => {
+      if (!driverId) {
+        toast.error("Driver ID is missing!");
+        return;
+      }
+
       setLoading(true);
       try {
-        const response = await fetch(`${BaseURL}/cars/list`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch listings");
-        }
-        const data = await response.json();
+        const response = await axios.get(
+          `${BaseURL}/cars/driver/${driverId}/cars`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        // Log the entire response to inspect the structure
-        console.log(data);
-
-        setListings(data.carListings || []);
-
-        // Log the IDs of all listings
-        data.carListings.forEach((listing) => {
-          console.log("Listing ID:", listing.id);
-        });
+        setListings(response.data.cars || []);
       } catch (err) {
         setError(err.message);
+        toast.error("Failed to fetch listings!");
       } finally {
         setLoading(false);
       }
     };
 
     fetchListings();
-  }, [token]);
+  }, [token, driverId]);
 
-  // Handle status badge colors
   const getStatusColor = (status) => {
     switch (status) {
       case "Active":
@@ -65,19 +63,28 @@ export default function Listings() {
   };
 
   // Handle Delete Listing
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this listing?")) return;
+  const handleDelete = async () => {
+    if (!listingToDelete) return;
+
     try {
-      const response = await fetch(`${BaseURL}/cars/listings/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Failed to delete listing");
-      setListings((prev) => prev.filter((listing) => listing.id !== id));
+      const response = await axios.delete(
+        `${BaseURL}/cars/list/${listingToDelete}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status !== 200) throw new Error("Failed to delete listing");
+
+      setListings((prev) =>
+        prev.filter((listing) => listing._id !== listingToDelete)
+      );
+      toast.success("Listing deleted successfully!");
+      setIsModalOpen(false); // Close the modal after deletion
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -86,7 +93,6 @@ export default function Listings() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <Header />
 
       <main className="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -140,7 +146,7 @@ export default function Listings() {
             .filter((listing) => filter === "All" || listing.status === filter)
             .map((listing) => (
               <div
-                key={listing.id}
+                key={listing._id}
                 className="bg-white border border-gray-200 rounded-lg p-6"
               >
                 <div className="flex items-start gap-6">
@@ -185,7 +191,10 @@ export default function Listings() {
                         </button>
                       </Link>
                       <button
-                        onClick={() => handleDelete(listing.id)}
+                        onClick={() => {
+                          setListingToDelete(listing._id); // Set the listing to delete
+                          setIsModalOpen(true); // Open the modal
+                        }}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
                       >
                         <FiTrash2 className="w-5 h-5" />
@@ -197,6 +206,13 @@ export default function Listings() {
             ))}
         </div>
       </main>
+
+      {/* Modal */}
+      <DeleteModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

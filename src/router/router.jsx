@@ -96,7 +96,7 @@ const App = () => {
     <Router>
       <div>
         <Routes>
-          <Route path="/registers" element={<MultiStepForm/>}/>
+          <Route path="/registers" element={<MultiStepForm />} />
           <Route path="/" element={<HomePage />} />
           <Route path="/choose" element={<ChoosePanel />} />
           <Route path="/login" element={<Login />} />
@@ -118,7 +118,7 @@ const App = () => {
           <Route path="/carpool/journey" element={<StartDestinationScreen />} />
 
           <Route path="/bill" element={<Bill />} />
-          <Route path="/bill/details" element={<BillDetails />} />
+          <Route path="/bill/details/:id" element={<BillDetails />} />
           <Route path="/activity" element={<Activity />} />
           <Route path="/ride" element={<Ride />} />
           <Route path="/ride/selection" element={<RideCarSelection />} />
@@ -137,7 +137,10 @@ const App = () => {
             element={<StartDestinationScreen />}
           />
           <Route path="/drivers" element={<DriverBooking />} />
-          <Route path="/driver/confirmation/:driverId" element={<DriverConfirmation />} />
+          <Route
+            path="/driver/confirmation/:driverId"
+            element={<DriverConfirmation />}
+          />
           <Route path="/driver/start" element={<DriverStart />} />
           <Route path="/driver/start-journey" element={<StartJourney />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

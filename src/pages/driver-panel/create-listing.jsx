@@ -4,6 +4,7 @@ import Header from "../../components/driver-panel/header";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BaseURL } from "../../utils/BaseURL";
+import toast from "react-hot-toast"; // Import toast
 
 export default function CreateListing() {
   const [selectedImage, setSelectedImage] = useState(null); // Single image
@@ -43,9 +44,9 @@ export default function CreateListing() {
     data.append("price", formData.price);
 
     if (selectedImage) {
-      data.append("image", selectedImage); // Append single image
+      data.append("file", selectedImage); // Append single image
     } else {
-      alert("Please upload an image.");
+      toast.error("Please upload an image."); // Replace alert with toast error
       return;
     }
 
@@ -58,13 +59,13 @@ export default function CreateListing() {
         withCredentials: true,
       });
 
-      alert("Car listing created successfully");
+      toast.success("Car listing created successfully"); // Success toast
       console.log(response.data);
     } catch (error) {
       console.error("Error while creating the car listing:", error);
-      alert(
+      toast.error(
         error.response?.data?.message ||
-          "An error occurred while creating the listing. Please try again."
+          "An error occurred while creating the listing. Please try again." // Error toast
       );
     }
   };
@@ -127,12 +128,12 @@ export default function CreateListing() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Vehicle make and model
+                  Vehicle Make
                 </label>
                 <input
                   type="text"
                   name="make"
-                  placeholder="Vehicle make and model"
+                  placeholder="Vehicle Make"
                   value={formData.make}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8257E9] focus:border-transparent"
@@ -154,18 +155,33 @@ export default function CreateListing() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price
-              </label>
-              <input
-                type="number"
-                name="price"
-                placeholder="Price"
-                value={formData.price}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#8257E9] focus:border-transparent"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Price
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  placeholder="Price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#8257E9] focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Vehicle Model
+                </label>
+                <input
+                  type="text"
+                  name="model"
+                  placeholder="Vehicle Model"
+                  value={formData.model}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8257E9] focus:border-transparent"
+                />
+              </div>
             </div>
 
             <button

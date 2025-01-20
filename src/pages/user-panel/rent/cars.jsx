@@ -3,6 +3,7 @@ import Header from "../../../components/user-panel/header"; // Import your Heade
 import { BiArrowBack } from "react-icons/bi";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { BaseURL } from "../../../utils/BaseURL";
 
 const RentCars = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -40,6 +41,8 @@ const RentCars = () => {
           "Content-Type": "application/json",
         },
       });
+
+      console.log(response);
 
       if (!response.ok) {
         throw new Error("Failed to fetch cars");
