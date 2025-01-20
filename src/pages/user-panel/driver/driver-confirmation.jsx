@@ -14,13 +14,12 @@ const DriverConfirmation = () => {
 
   // State to manage form data
   const [formData, setFormData] = useState({
-    user: userId, // Static userId
     driver: driverId,
     location: "",
     carName: "",
     carNumber: "",
-    startTime: new Date(), // Default start time
-    endTime: new Date(), // Default end time
+    startTime: new Date().toISOString().slice(0, 16), // Default start time
+    endTime: new Date().toISOString().slice(0, 16), // Default end time
     paymentMethod: "credit_card", // Default payment method
   });
 
@@ -34,25 +33,37 @@ const DriverConfirmation = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  // Validate form data
+  const validateForm = () => {
+    const { location, carName, carNumber, startTime, endTime } = formData;
+    if (!location || !carName || !carNumber || !startTime || !endTime) {
+      setError("All fields are required.");
+      return false;
+    }
+    return true;
+  };
+
   // Handle form submission
   const handleConfirm = async () => {
+    if (!validateForm()) return;
+
     setLoading(true);
     setError("");
 
-    if (!formData.driver) {
-      setError("Driver ID is missing.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await axios.post(`${BaseURL}/bookings/book`, formData, {
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM",
-          "Content-Type": "application/json",
-        },
-      });
+      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace with a token from a secure source (e.g., localStorage)
+      if (!token) throw new Error("Authentication token is missing. Please log in again.");
+
+      const response = await axios.post(
+        `${BaseURL}/bookings/book`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.data.message === "Driver booked successfully") {
         alert("Driver booked successfully!");
@@ -61,11 +72,7 @@ const DriverConfirmation = () => {
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || "An unexpected error occurred.";
-      const errorDetails = err.response?.data?.details || null;
-
-      setError(
-        errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage
-      );
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -148,11 +155,9 @@ const DriverConfirmation = () => {
             </div>
           </div>
 
-          {/* Payment and Status Section */}
+          {/* Payment Section */}
           <div className="bg-white rounded-2xl shadow-md p-4">
-            <h3 className="text-gray-800 font-semibold mb-2">
-              Payment & Status
-            </h3>
+            <h3 className="text-gray-800 font-semibold mb-2">Payment</h3>
             <div className="space-y-2">
               <label className="text-gray-600">Payment Method</label>
               <select
