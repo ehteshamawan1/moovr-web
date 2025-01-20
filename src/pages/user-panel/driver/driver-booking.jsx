@@ -3,6 +3,7 @@ import Header from "../../../components/user-panel/header"; // Import your Heade
 import DriverCard from "../../../components/user-panel/driver-booking-card"; // Import DriverCard
 import { BiArrowBack } from "react-icons/bi";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { BaseURL } from "../../../utils/BaseURL";
 
 const DriverBooking = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -23,22 +24,22 @@ const DriverBooking = () => {
         setError(null);
         setServerMessage("");
 
-        const response = await fetch(
-          "https://moovr-api.vercel.app/api/v1/auth/drivers/available",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Replace <your-token> with the actual token
-            },
-          }
-        );
+        const response = await fetch(`${BaseURL}/auth/drivers/available`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Replace <your-token> with the actual token
+          },
+        });
 
         const data = await response.json();
 
         if (!response.ok) {
           setError(`Error: ${response.status} ${response.statusText}`);
-          setServerMessage(data.message || "An error occurred while fetching data.");
+          setServerMessage(
+            data.message || "An error occurred while fetching data."
+          );
           setDrivers([]); // Clear the drivers if an error occurs
           return;
         }
@@ -115,11 +116,12 @@ const DriverBooking = () => {
                 name={`${driver.firstName}`}
                 rating={driver.reviews?.length || 0}
                 price={driver.hourlyPrice || 0}
-                availability={driver.availability ? "Available" : "Not Available"}
+                availability={
+                  driver.availability ? "Available" : "Not Available"
+                }
                 carTypes={driver.carCategory ? [driver.carCategory] : []}
                 profilePicture={driver.profilePicture}
               />
-
             ))
           ) : (
             <div className="col-span-full text-center text-gray-500">

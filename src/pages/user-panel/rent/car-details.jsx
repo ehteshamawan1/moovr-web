@@ -3,6 +3,7 @@ import Header from "../../../components/user-panel/header";
 import { BiArrowBack } from "react-icons/bi";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { BaseURL } from "../../../utils/BaseURL";
 
 const CarDetail = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const CarDetail = () => {
   useEffect(() => {
     const fetchCarDetails = async () => {
       try {
-        const response = await fetch(`https://moovr-api.vercel.app/api/v1/cars/list/${id}`);
+        const response = await fetch(`${BaseURL}/cars/list/${id}`);
         const data = await response.json();
         if (data) {
           setCarDetails(data);
@@ -106,15 +107,17 @@ const CarDetail = () => {
 
             {isDropdownOpen && (
               <div className="absolute top-12 right-0 bg-white shadow-md rounded-md border border-gray-200">
-                {["Debit Card", "Credit Card", "PayPal"].map((paymentMethod) => (
-                  <button
-                    key={paymentMethod}
-                    onClick={() => handleSelectPayment(paymentMethod)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                  >
-                    {paymentMethod}
-                  </button>
-                ))}
+                {["Debit Card", "Credit Card", "PayPal"].map(
+                  (paymentMethod) => (
+                    <button
+                      key={paymentMethod}
+                      onClick={() => handleSelectPayment(paymentMethod)}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      {paymentMethod}
+                    </button>
+                  )
+                )}
               </div>
             )}
           </div>

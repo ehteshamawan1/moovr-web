@@ -4,18 +4,27 @@ import React from "react";
 import { FiUpload } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { BaseURL } from "../../utils/BaseURL";
 
 export default function VehicleRegistration() {
   const handleConfirm = async () => {
     const fileInput = document.getElementById("fileInput");
     const file = fileInput?.files[0];
     const ownerName = document.getElementById("ownerName")?.value;
-    const registrationNumber = document.getElementById("registrationNumber")?.value;
+    const registrationNumber =
+      document.getElementById("registrationNumber")?.value;
     const vehicleModel = document.getElementById("vehicleModel")?.value;
     const registrationDate = document.getElementById("registrationDate")?.value;
     const expiryDate = document.getElementById("expiryDate")?.value;
 
-    if (!file || !ownerName || !registrationNumber || !vehicleModel || !registrationDate || !expiryDate) {
+    if (
+      !file ||
+      !ownerName ||
+      !registrationNumber ||
+      !vehicleModel ||
+      !registrationDate ||
+      !expiryDate
+    ) {
       toast.error("Please fill all required fields and upload the file.");
       return;
     }
@@ -30,11 +39,12 @@ export default function VehicleRegistration() {
     formData.append("file", file);
 
     try {
-      const response = await fetch("https://moovr-api.vercel.app/api/v1/driver/upload-document", {
+      const response = await fetch(`${BaseURL}/driver/upload-document`, {
         method: "POST",
         body: formData,
         headers: {
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM",
         },
       });
 
@@ -42,11 +52,15 @@ export default function VehicleRegistration() {
         toast.success("Vehicle registration book uploaded successfully!");
         // Redirect or update UI as needed
       } else {
-        toast.error("Vehicle registration book upload failed. Please try again.");
+        toast.error(
+          "Vehicle registration book upload failed. Please try again."
+        );
       }
     } catch (error) {
       console.error("Error uploading file:", error);
-      toast.error("An error occurred while uploading the vehicle registration book.");
+      toast.error(
+        "An error occurred while uploading the vehicle registration book."
+      );
     }
   };
 

@@ -3,10 +3,14 @@ import Header from "../../../components/user-panel/header";
 import { BiArrowBack } from "react-icons/bi";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { BaseURL } from "../../../utils/BaseURL";
 
 const DriverConfirmation = () => {
   const { driverId } = useParams(); // Extract driverId from URL params
   const navigate = useNavigate();
+
+  // Static userId
+  const userId = "abcdg";
 
   // State to manage form data
   const [formData, setFormData] = useState({
@@ -14,8 +18,8 @@ const DriverConfirmation = () => {
     location: "",
     carName: "",
     carNumber: "",
-    startTime: new Date().toISOString().slice(0, 16), // Default start time in ISO format
-    endTime: new Date().toISOString().slice(0, 16), // Default end time in ISO format
+    startTime: new Date().toISOString().slice(0, 16), // Default start time
+    endTime: new Date().toISOString().slice(0, 16), // Default end time
     paymentMethod: "credit_card", // Default payment method
   });
 
@@ -29,26 +33,29 @@ const DriverConfirmation = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  // Validate form data
+  const validateForm = () => {
+    const { location, carName, carNumber, startTime, endTime } = formData;
+    if (!location || !carName || !carNumber || !startTime || !endTime) {
+      setError("All fields are required.");
+      return false;
+    }
+    return true;
+  };
+
   // Handle form submission
   const handleConfirm = async () => {
+    if (!validateForm()) return;
+
     setLoading(true);
     setError("");
 
-    if (!formData.driver) {
-      setError("Driver ID is missing.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const token =        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace this with your actual or dummy token for testing
-      // Retrieve token from localStorage
-      if (!token) {
-        throw new Error("Authentication token is missing. Please log in again.");
-      }
+      const token = "your-jwt-token"; // Replace with a token from a secure source (e.g., localStorage)
+      if (!token) throw new Error("Authentication token is missing. Please log in again.");
 
       const response = await axios.post(
-        "https://moovr-api.vercel.app/api/v1/bookings/book",
+        `${BaseURL}/bookings/book`,
         formData,
         {
           headers: {
@@ -63,10 +70,9 @@ const DriverConfirmation = () => {
         navigate("/driver/start");
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "An unexpected error occurred.";
-      const errorDetails = err.response?.data?.details || null;
-
-      setError(errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage);
+      const errorMessage =
+        err.response?.data?.message || "An unexpected error occurred.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -149,9 +155,9 @@ const DriverConfirmation = () => {
             </div>
           </div>
 
-          {/* Payment and Status Section */}
+          {/* Payment Section */}
           <div className="bg-white rounded-2xl shadow-md p-4">
-            <h3 className="text-gray-800 font-semibold mb-2">Payment & Status</h3>
+            <h3 className="text-gray-800 font-semibold mb-2">Payment</h3>
             <div className="space-y-2">
               <label className="text-gray-600">Payment Method</label>
               <select

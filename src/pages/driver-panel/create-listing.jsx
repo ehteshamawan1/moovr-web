@@ -3,6 +3,7 @@ import { FiUpload } from "react-icons/fi";
 import Header from "../../components/driver-panel/header";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { BaseURL } from "../../utils/BaseURL";
 
 export default function CreateListing() {
   const [selectedImage, setSelectedImage] = useState(null); // Single image
@@ -31,7 +32,7 @@ export default function CreateListing() {
   };
 
   const handleSubmit = async () => {
-    const url = "https://moovr-api.vercel.app/api/v1/cars/list"; // Backend API URL
+    const url = `${BaseURL}/cars/list`; // Backend API URL
     const token = localStorage.getItem("token"); // Retrieve token from localStorage
 
     const data = new FormData();

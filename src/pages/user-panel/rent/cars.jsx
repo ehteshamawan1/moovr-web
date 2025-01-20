@@ -24,7 +24,7 @@ const RentCars = () => {
   // Function to fetch cars from the API with token
   const fetchCars = async () => {
     const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM";
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM";
 
     if (!token) {
       setError("No authentication token found");
@@ -33,10 +33,10 @@ const RentCars = () => {
     }
 
     try {
-      const response = await fetch("https://moovr-api.vercel.app/api/v1/cars/list", {
+      const response = await fetch(`${BaseURL}/cars/list`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -126,7 +126,8 @@ const RentCars = () => {
           {cars
             .filter((car) => {
               if (selectedOption === "All") return true;
-              if (selectedOption === "Available") return car.status === "Available";
+              if (selectedOption === "Available")
+                return car.status === "Available";
               return true;
             })
             .map((car) => (
@@ -137,7 +138,9 @@ const RentCars = () => {
                     alt={car.name}
                     className="w-full h-40 object-cover mb-4"
                   />
-                  <h2 className="font-semibold text-lg text-gray-800">{car.name}</h2>
+                  <h2 className="font-semibold text-lg text-gray-800">
+                    {car.name}
+                  </h2>
                   <div className="flex gap-2 pt-3 items-center">
                     <img src="/icons/ride/map-pin.svg" alt="Location icon" />
                     <p className="text-sm text-gray-500">{car.location}</p>
@@ -149,7 +152,9 @@ const RentCars = () => {
                     </div>
                     <div className="flex gap-2 items-center">
                       <img src="/icons/ride/coins.svg" alt="Price icon" />
-                      <p className="font-medium text-gray-900">₦{car.price}/h</p>
+                      <p className="font-medium text-gray-900">
+                        ₦{car.price}/h
+                      </p>
                     </div>
                   </div>
                 </div>
