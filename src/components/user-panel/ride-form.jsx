@@ -1,13 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { BaseURL } from "../../utils/BaseURL";
 
 const RideForm = () => {
   const [pickupLocation, setPickupLocation] = useState(null);
   const [dropoffLocation, setDropoffLocation] = useState(null);
+  const [pickupAddress, setPickupAddress] = useState("");
+  const [dropoffAddress, setDropoffAddress] = useState("");
   const [isMapsReady, setIsMapsReady] = useState(false);
+  const [distance, setDistance] = useState(null);
   const mapRef = useRef(null);
   const directionsServiceRef = useRef(null);
   const directionsRendererRef = useRef(null);
   const mapInstance = useRef(null);
+
+  const dummyToken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODYwN2YzY2E4NGJmODllNmRiZTc1NiIsInBob25lIjoiKzkyMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjgzNzE3NSwiZXhwIjoxNzM4MTMzMTc1fQ.MFPhjtomXz1HMRxX_FA7DpwvxFZ4e24eQLBEj7z0lhI"; // Dummy token for authorization
 
   useEffect(() => {
     const loadGoogleMapsScript = () => {
@@ -55,8 +62,10 @@ const RideForm = () => {
 
         if (type === "pickup") {
           setPickupLocation(location);
+          setPickupAddress(place.formatted_address || "");
         } else {
           setDropoffLocation(location);
+          setDropoffAddress(place.formatted_address || "");
         }
 
         mapInstance.current.setCenter(place.geometry.location);
@@ -91,11 +100,64 @@ const RideForm = () => {
       (result, status) => {
         if (status === "OK") {
           directionsRenderer.setDirections(result);
+          const route = result.routes[0];
+          const distanceInKm = route.legs[0].distance.value / 1000;
+          setDistance(distanceInKm);
         } else {
           console.error(`Directions request failed due to ${status}`);
         }
       }
     );
+  };
+
+  const handleCreateRide = async () => {
+    if (!pickupLocation || !dropoffLocation || distance === null) {
+      alert("Please enter valid pickup and dropoff locations.");
+      return;
+    }
+
+    const rideData = {
+      pickupLocation: pickupAddress,
+      dropoffLocation: dropoffAddress,
+      pickupCoordinates: [pickupLocation.lng, pickupLocation.lat],
+      dropoffCoordinates: [dropoffLocation.lng, dropoffLocation.lat],
+      distance,
+    };
+
+    try {
+      const response = await axios.post(`${BaseURL}/rides/create`, rideData, {
+        headers: {
+          Authorization: dummyToken,
+        },
+      });
+      alert("Ride created successfully: " + response.data.message);
+
+      // Open full map with pickup and dropoff markers
+      const google = window.google;
+      const fullMap = new google.maps.Map(mapRef.current, {
+        center: pickupLocation,
+        zoom: 10,
+      });
+
+      new google.maps.Marker({
+        position: pickupLocation,
+        map: fullMap,
+        label: "P",
+      });
+
+      new google.maps.Marker({
+        position: dropoffLocation,
+        map: fullMap,
+        label: "D",
+      });
+
+      directionsRendererRef.current.setMap(fullMap);
+      directionsRendererRef.current.setDirections(null);
+      calculateAndDisplayRoute();
+    } catch (error) {
+      console.error("Error creating ride:", error);
+      alert("Failed to create ride. Please try again.");
+    }
   };
 
   return (
@@ -124,15 +186,15 @@ const RideForm = () => {
 
           <button
             type="button"
-            onClick={calculateAndDisplayRoute}
-            disabled={!isMapsReady}
+            onClick={handleCreateRide}
+            disabled={!isMapsReady || !pickupLocation || !dropoffLocation}
             className={`w-full py-3 text-lg rounded-full ${
-              isMapsReady
+              isMapsReady && pickupLocation && dropoffLocation
                 ? "bg-purple-500 text-white hover:bg-purple-600"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
           >
-            Search
+            Create Ride
           </button>
         </form>
 
