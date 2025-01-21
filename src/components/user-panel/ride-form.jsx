@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BaseURL } from "../../utils/BaseURL";
+import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 
 const RideForm = () => {
   const [pickupLocation, setPickupLocation] = useState(null);
@@ -17,6 +18,9 @@ const RideForm = () => {
   const directionsRendererRef = useRef(null);
   const mapInstance = useRef(null);
   const navigate = useNavigate();
+
+  const dummyToken =
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODYwN2YzY2E4NGJmODllNmRiZTc1NiIsInBob25lIjoiKzkyMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjgzNzE3NSwiZXhwIjoxNzM4MTMzMTc1fQ.MFPhjtomXz1HMRxX_FA7DpwvxFZ4e24eQLBEj7z0lhI"; // Dummy token for authorization
 
   useEffect(() => {
     const loadGoogleMapsScript = () => {
@@ -112,7 +116,7 @@ const RideForm = () => {
     );
   };
 
-  const handleSubmit = () => {
+  const handleCreateRide = async () => {
     if (!pickupLocation || !dropoffLocation || distance === null) {
       alert("Please enter valid pickup and dropoff locations.");
       return;
@@ -128,11 +132,45 @@ const RideForm = () => {
       scheduleTime: pickupType === "later" ? scheduleTime : null,
     };
 
-    navigate("/ride/selection", { state: { rideData } });
+    try {
+      const response = await axios.post(`${BaseURL}/rides/create`, rideData, {
+        headers: {
+          Authorization: dummyToken,
+        },
+      });
+      alert("Ride created successfully: " + response.data.message);
+
+      // Open full map with pickup and dropoff markers
+      const google = window.google;
+      const fullMap = new google.maps.Map(mapRef.current, {
+        center: pickupLocation,
+        zoom: 10,
+      });
+
+      new google.maps.Marker({
+        position: pickupLocation,
+        map: fullMap,
+        label: "P",
+      });
+
+      new google.maps.Marker({
+        position: dropoffLocation,
+        map: fullMap,
+        label: "D",
+      });
+
+      directionsRendererRef.current.setMap(fullMap);
+      directionsRendererRef.current.setDirections(null);
+      calculateAndDisplayRoute();
+    } catch (error) {
+      console.error("Error creating ride:", error);
+      alert("Failed to create ride. Please try again.");
+    }
   };
 
   return (
     <div className="bg-white p-8 rounded-lg w-full max-w-6xl mx-auto ">
+      <Toaster />
       <h3 className="text-xl font-semibold mb-4">Get your ride</h3>
       <div className="flex flex-col items-center lg:flex-row gap-6">
         {/* Input Fields */}
@@ -180,7 +218,7 @@ const RideForm = () => {
 
           <button
             type="button"
-            onClick={handleSubmit}
+            onClick={handleCreateRide}
             disabled={!isMapsReady || !pickupLocation || !dropoffLocation}
             className={`w-full py-3 text-lg rounded-full ${
               isMapsReady && pickupLocation && dropoffLocation
@@ -188,7 +226,7 @@ const RideForm = () => {
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
           >
-            Next
+            Create Ride
           </button>
         </form>
 

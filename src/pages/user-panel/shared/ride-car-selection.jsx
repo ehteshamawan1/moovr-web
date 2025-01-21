@@ -11,17 +11,14 @@ const RideSelectionScreen = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [rideData, setRideData] = useState(null);
+  const rideData = location.state?.rideData;
 
   useEffect(() => {
-    console.log(location.state.rideData);
-    if (location.state && location.state.rideData) {
-      setRideData(location.state.rideData);
-    } else {
+    if (!rideData) {
       toast.error("No ride data found. Please try again.");
       navigate("/ride");
     }
-  }, [location.state, navigate]);
+  }, [rideData, navigate]);
 
   const handleCreateRide = async () => {
     if (!rideData) return;
@@ -36,8 +33,9 @@ const RideSelectionScreen = () => {
       });
 
       if (response.status === 200) {
-        const rideId = response.data.ride._id;
-        waitForRideAcceptance(rideId);
+        // const rideId = response.data.ride._id;
+        // waitForRideAcceptance(rideId);
+        console.log("Ride created successfully:", response.data);
       } else {
         toast.error("Failed to create ride. Please try again.");
         setLoading(false);
@@ -49,25 +47,25 @@ const RideSelectionScreen = () => {
     }
   };
 
-  const waitForRideAcceptance = (rideId) => {
-    const intervalId = setInterval(async () => {
-      try {
-        const response = await axios.get(`${BaseURL}/rides/status/${rideId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+  // const waitForRideAcceptance = (rideId) => {
+  //   const intervalId = setInterval(async () => {
+  //     try {
+  //       const response = await axios.get(`${BaseURL}/rides/status/${rideId}`, {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       });
 
-        if (response.data.status === "accepted") {
-          clearInterval(intervalId);
-          toast.success("Ride accepted!");
-          navigate("/ride/meet", { state: { rideId } });
-        }
-      } catch (error) {
-        console.error("Error checking ride status:", error);
-      }
-    }, 5000); // Check every 5 seconds
-  };
+  //       if (response.data.status === "accepted") {
+  //         clearInterval(intervalId);
+  //         toast.success("Ride accepted!");
+  //         navigate("/ride/meet", { state: { rideId } });
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking ride status:", error);
+  //     }
+  //   }, 5000); // Check every 5 seconds
+  // };
 
   return (
     <div className="h-screen w-screen">
@@ -92,7 +90,7 @@ const RideSelectionScreen = () => {
           <RideOptions />
 
           {/* Payment Selector */}
-          <PaymentSelector pageLink="#" onClick={handleCreateRide} />
+          <PaymentSelector onClick={handleCreateRide} />
         </div>
 
         {/* Loading Spinner */}
