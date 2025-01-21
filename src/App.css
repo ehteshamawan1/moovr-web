@@ -67,6 +67,14 @@
   );
 }
 
+.ride-button-gradient {
+  background: linear-gradient(
+    135deg,
+    rgba(167, 90, 242, 1) 0%,
+    rgba(97, 52, 140, 0.7) 100%
+  );
+}
+
 .go-button-bg-gradient {
   background: linear-gradient(
     135deg,

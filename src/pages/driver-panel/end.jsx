@@ -2,9 +2,41 @@ import React from "react";
 import Header from "../../components/driver-panel/header";
 import { MdOutlinePersonOutline } from "react-icons/md";
 import { IoIosStar } from "react-icons/io";
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { BaseURL } from "../../utils/BaseURL";
 
 const End = () => {
+  const location = useLocation();
+  const { ride } = location.state;
+  const navigate = useNavigate();
+
+  const handleCompleteRide = async () => {
+    try {
+      const response = await axios.put(
+        `${BaseURL}/rides/status/${ride._id}`,
+        { status: "completed" },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("Ride completed successfully!");
+        navigate("/d/completed");
+      } else {
+        toast.error("Failed to complete the ride. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Error completing the ride. Please try again.");
+      console.error("Error completing the ride:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -22,18 +54,21 @@ const End = () => {
                   <div className="w-10 h-10 bg-primaryPurple rounded-full flex items-center justify-center text-white">
                     <MdOutlinePersonOutline size={25} />
                   </div>
-                  <h2 className="text-[16px] font-[600]">MoovR X</h2>
+                  <h2 className="text-[16px] font-[600]">
+                    {ride.driverName || "MoovR X"}
+                  </h2>
                   <p className="font-[600] text-[24px]">
-                    <span className="text-[14px] mr-1">₦</span>125
+                    <span className="text-[14px] mr-1">₦</span>
+                    {ride.price}
                   </p>
                   <p className="text-[12px] text-black/50">Includes 5% tax</p>
                   <p className="flex items-center gap-2 text-[12px] text-black">
-                    <IoIosStar className="text-primaryPurple" /> 4.3 Cash
-                    Payment
+                    <IoIosStar className="text-primaryPurple" />{" "}
+                    {ride.rating || 4.3} Cash Payment
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 items-start ">
+              <div className="flex gap-2 items-start">
                 <img
                   className="mt-2"
                   src="/driver/horizontal-sm-connector.svg"
@@ -43,23 +78,26 @@ const End = () => {
                   <div className="mb-4 text-black text-[16px]">
                     <p>Pickup point </p>
                     <p className="text-[12px] text-black/50">
-                      House no 32, Freetown, Abuja, Nigeria
+                      {ride.pickupLocation}
                     </p>
                   </div>
                   <div>
-                    <p>15 mins (4.5Km) trip</p>
+                    <p>
+                      {ride.estimatedTime || "15 mins"} (
+                      {ride.estimatedDistance || "4.5km"}) trip
+                    </p>
                     <p className="text-[12px] text-black/50">
-                      Dropoff: Transcorp hill station, Sani Abacha way, Abuja,
-                      Nigeria
+                      Dropoff: {ride.dropoffLocation}
                     </p>
                   </div>
                 </div>
               </div>
-              <Link to={"/d/completed"}>
-                <button className="bg-[#F3E9FE]  w-full mt-4 py-4 font-[600] rounded-full">
-                  End
-                </button>
-              </Link>
+              <button
+                onClick={handleCompleteRide}
+                className="bg-[#F3E9FE] w-full mt-4 py-4 font-[600] rounded-full"
+              >
+                End
+              </button>
             </div>
           </div>
         </div>

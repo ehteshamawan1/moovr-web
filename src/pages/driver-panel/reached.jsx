@@ -1,10 +1,42 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../../components/driver-panel/header";
 import { MdOutlinePersonOutline } from "react-icons/md";
 import { IoIosStar } from "react-icons/io";
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { BaseURL } from "../../utils/BaseURL";
 
 const Reached = () => {
+  const location = useLocation();
+  const { ride } = location.state;
+  const navigate = useNavigate();
+
+  const handleStartRide = async () => {
+    try {
+      const response = await axios.put(
+        `${BaseURL}/rides/status/${ride._id}`,
+        { status: "running" },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("Ride started successfully!");
+        navigate("/d/end", { state: { ride } });
+      } else {
+        toast.error("Failed to start the ride. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Error starting the ride. Please try again.");
+      console.error("Error starting the ride:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -22,18 +54,21 @@ const Reached = () => {
                   <div className="w-10 h-10 bg-primaryPurple rounded-full flex items-center justify-center text-white">
                     <MdOutlinePersonOutline size={25} />
                   </div>
-                  <h2 className="text-[16px] font-[600]">MoovR X</h2>
+                  <h2 className="text-[16px] font-[600]">
+                    {ride.driverName || "MoovR X"}
+                  </h2>
                   <p className="font-[600] text-[24px]">
-                    <span className="text-[14px] mr-1">₦</span>125
+                    <span className="text-[14px] mr-1">₦</span>
+                    {ride.price}
                   </p>
                   <p className="text-[12px] text-black/50">Includes 5% tax</p>
                   <p className="flex items-center gap-2 text-[12px] text-black">
-                    <IoIosStar className="text-primaryPurple" /> 4.3 Cash
-                    Payment
+                    <IoIosStar className="text-primaryPurple" />{" "}
+                    {ride.rating || 4.3} Cash Payment
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 items-start ">
+              <div className="flex gap-2 items-start">
                 <img
                   className="mt-2"
                   src="/driver/horizontal-sm-connector.svg"
@@ -41,25 +76,37 @@ const Reached = () => {
                 />
                 <div>
                   <div className="mb-4 text-black text-[16px]">
-                    <p>Reached pickup point </p>
+                    <p>
+                      <span>
+                        {ride.timeToPickup || "5 mins"} (
+                        {ride.distanceToPickup || "1.3km"})
+                      </span>{" "}
+                      away
+                    </p>
                     <p className="text-[12px] text-black/50">
-                      House no 32, Freetown, Abuja, Nigeria
+                      {ride.pickupLocation}
                     </p>
                   </div>
                   <div>
-                    <p>15 mins (4.5Km) trip</p>
+                    <p>
+                      <span>
+                        {ride.estimatedTime || "15 mins"} (
+                        {ride.estimatedDistance || "4.5km"})
+                      </span>{" "}
+                      trip
+                    </p>
                     <p className="text-[12px] text-black/50">
-                      Dropoff: Transcorp hill station, Sani Abacha way, Abuja,
-                      Nigeria
+                      Dropoff: {ride.dropoffLocation}
                     </p>
                   </div>
                 </div>
               </div>
-              <Link to={"/d/end"}>
-                <button className="bg-primaryPurple text-white w-full mt-4 py-4 font-[600] rounded-full">
-                  Go
-                </button>
-              </Link>
+              <button
+                onClick={handleStartRide}
+                className="bg-primaryPurple text-white w-full mt-4 py-4 font-[600] rounded-full"
+              >
+                Go
+              </button>
             </div>
           </div>
         </div>

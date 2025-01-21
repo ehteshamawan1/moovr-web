@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BaseURL } from "../../utils/BaseURL";
 
@@ -9,12 +10,13 @@ const RideForm = () => {
   const [dropoffAddress, setDropoffAddress] = useState("");
   const [isMapsReady, setIsMapsReady] = useState(false);
   const [distance, setDistance] = useState(null);
+  const [pickupType, setPickupType] = useState("now");
+  const [scheduleTime, setScheduleTime] = useState("");
   const mapRef = useRef(null);
   const directionsServiceRef = useRef(null);
   const directionsRendererRef = useRef(null);
   const mapInstance = useRef(null);
-
-  const dummyToken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODYwN2YzY2E4NGJmODllNmRiZTc1NiIsInBob25lIjoiKzkyMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjgzNzE3NSwiZXhwIjoxNzM4MTMzMTc1fQ.MFPhjtomXz1HMRxX_FA7DpwvxFZ4e24eQLBEj7z0lhI"; // Dummy token for authorization
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadGoogleMapsScript = () => {
@@ -110,7 +112,7 @@ const RideForm = () => {
     );
   };
 
-  const handleCreateRide = async () => {
+  const handleSubmit = () => {
     if (!pickupLocation || !dropoffLocation || distance === null) {
       alert("Please enter valid pickup and dropoff locations.");
       return;
@@ -122,42 +124,11 @@ const RideForm = () => {
       pickupCoordinates: [pickupLocation.lng, pickupLocation.lat],
       dropoffCoordinates: [dropoffLocation.lng, dropoffLocation.lat],
       distance,
+      pickupType,
+      scheduleTime: pickupType === "later" ? scheduleTime : null,
     };
 
-    try {
-      const response = await axios.post(`${BaseURL}/rides/create`, rideData, {
-        headers: {
-          Authorization: dummyToken,
-        },
-      });
-      alert("Ride created successfully: " + response.data.message);
-
-      // Open full map with pickup and dropoff markers
-      const google = window.google;
-      const fullMap = new google.maps.Map(mapRef.current, {
-        center: pickupLocation,
-        zoom: 10,
-      });
-
-      new google.maps.Marker({
-        position: pickupLocation,
-        map: fullMap,
-        label: "P",
-      });
-
-      new google.maps.Marker({
-        position: dropoffLocation,
-        map: fullMap,
-        label: "D",
-      });
-
-      directionsRendererRef.current.setMap(fullMap);
-      directionsRendererRef.current.setDirections(null);
-      calculateAndDisplayRoute();
-    } catch (error) {
-      console.error("Error creating ride:", error);
-      alert("Failed to create ride. Please try again.");
-    }
+    navigate("/ride/selection", { state: { rideData } });
   };
 
   return (
@@ -184,9 +155,32 @@ const RideForm = () => {
             />
           </div>
 
+          <div className="flex items-center bg-gray-100 rounded-full px-4 py-4">
+            <select
+              value={pickupType}
+              onChange={(e) => setPickupType(e.target.value)}
+              className="bg-transparent focus:outline-none w-full"
+            >
+              <option value="now">Pickup Now</option>
+              <option value="later">Schedule Later</option>
+            </select>
+          </div>
+
+          {pickupType === "later" && (
+            <div className="flex items-center bg-gray-100 rounded-full px-4 py-4">
+              <input
+                type="time"
+                value={scheduleTime}
+                onChange={(e) => setScheduleTime(e.target.value)}
+                className="bg-transparent focus:outline-none w-full"
+                placeholder="Pickup Time"
+              />
+            </div>
+          )}
+
           <button
             type="button"
-            onClick={handleCreateRide}
+            onClick={handleSubmit}
             disabled={!isMapsReady || !pickupLocation || !dropoffLocation}
             className={`w-full py-3 text-lg rounded-full ${
               isMapsReady && pickupLocation && dropoffLocation
@@ -194,7 +188,7 @@ const RideForm = () => {
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
           >
-            Create Ride
+            Next
           </button>
         </form>
 
