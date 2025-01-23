@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiChevronDown, FiStar } from "react-icons/fi";
 import { PieChart, Pie, Cell } from "recharts";
 import Header from "../../components/driver-panel/header";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { BaseURL } from "../../utils/BaseURL";
 
 const Card = ({ children, className = "", ...props }) => (
   <div
@@ -60,14 +62,93 @@ const StarRating = ({ rating = 5, size = "large" }) => {
 };
 
 export default function Dashboard() {
-  // Data for the rides pie chart
-  const ridesData = [
-    { name: "Completed", value: 45, color: "#8257E9" },
-    { name: "Cancelled", value: 5, color: "#4C1D95" },
-  ];
+  const [ridesData, setRidesData] = useState([]);
+  const [totalRides, setTotalRides] = useState(0);
+  const [acceptedPercentage, setAcceptedPercentage] = useState(0);
+  const [canceledPercentage, setCanceledPercentage] = useState(0);
+  const [totalListings, setTotalListings] = useState(0); // State for total listings
+
+  // Reusable function for API calls
+  const fetchData = async (url, config = {}) => {
+    try {
+      const response = await axios.get(url, config);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      return null;
+    }
+  };
+
+  // Fetch ride data
+  useEffect(() => {
+    const fetchRides = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const { data } = await axios.get(`${BaseURL}/rides/driver`, config);
+
+        if (data && data.driverRides) {
+          const rides = data.driverRides;
+          const total = rides.length;
+
+          const acceptedRides = rides.filter(
+            (ride) => ride.status === "accepted"
+          ).length;
+          const canceledRides = rides.filter(
+            (ride) => ride.status === "canceled"
+          ).length;
+
+          setTotalRides(total || 0);
+
+          const acceptedPct =
+            total > 0 ? ((acceptedRides / total) * 100).toFixed(1) : 0;
+          const canceledPct =
+            total > 0 ? ((canceledRides / total) * 100).toFixed(1) : 0;
+
+          setAcceptedPercentage(acceptedPct);
+          setCanceledPercentage(canceledPct);
+
+          setRidesData([
+            { name: "Accepted", value: acceptedRides, color: "#8257E9" },
+            { name: "Canceled", value: canceledRides, color: "#4C1D95" },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchRides();
+  }, []);
+
+  // Fetch listings data
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        const driverId = userData?._id;
+
+        if (driverId) {
+          const response = await axios.get(
+            `${BaseURL}/cars/driver/${driverId}/cars`
+          );
+          const cars = response.data.cars || [];
+          setTotalListings(cars.length);
+        }
+      } catch (error) {
+        console.error("Error fetching car listings:", error);
+      }
+    };
+
+    fetchListings();
+  }, []);
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <Header />
 
       <main className="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -88,7 +169,6 @@ export default function Dashboard() {
               </div>
             </Link>
           </Card>
-
           {/* Rides Card */}
           <Card className="shadow-md">
             <Link to="/d/rides">
@@ -115,23 +195,23 @@ export default function Dashboard() {
                     </Pie>
                   </PieChart>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-semibold">50</span>
+                    <span className="text-2xl font-semibold">{totalRides}</span>
                   </div>
                 </div>
               </div>
               <div className="flex justify-center gap-6 mt-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-[#8257E9]" />
-                  <span>Completed</span>
+                  <span>Accepted</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-[#4C1D95]" />
-                  <span>Cancelled</span>
+                  <span>Canceled</span>
                 </div>
               </div>
             </Link>
           </Card>
-
+          {/* Other Cards */}
           {/* Ratings Card */}
           <Card className="shadow-md">
             <Link to="/d/rating">
@@ -146,8 +226,6 @@ export default function Dashboard() {
               </div>
             </Link>
           </Card>
-
-          {/* Listings Card */}
           <Card className="shadow-md">
             <Link to="/d/listing">
               <div className="flex justify-between items-start">
@@ -159,9 +237,9 @@ export default function Dashboard() {
                   <PieChart width={120} height={120}>
                     <Pie
                       data={[
-                        { name: "Active", value: 50, color: "#A855F7" }, // Purple
-                        { name: "Inactive", value: 30, color: "#7C3AED" }, // Dark Purple
-                        { name: "Cancelled", value: 20, color: "#EF4444" }, // Red
+                        { name: "Active", value: 50, color: "#A855F7" },
+                        { name: "Inactive", value: 30, color: "#7C3AED" },
+                        { name: "Cancelled", value: 20, color: "#EF4444" },
                       ]}
                       cx={60}
                       cy={60}
@@ -186,28 +264,14 @@ export default function Dashboard() {
                       dominantBaseline="middle"
                       className="text-2xl font-bold"
                     >
-                      50
+                      {totalListings}
                     </text>
                   </PieChart>
                 </div>
               </div>
-              <div className="flex justify-center gap-6 mt-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#A75AF2]" />
-                  <span>Inactive</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#572083]" />
-                  <span>Active</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#EB001B]" />
-                  <span>Removed</span>
-                </div>
-              </div>
             </Link>
           </Card>
-
+          
           {/* Bookings Card */}
           <Card className="shadow-md">
             <Link to="/d/bookings">
@@ -267,7 +331,7 @@ export default function Dashboard() {
                 </div>
               </div>
             </Link>
-          </Card>
+          </Card>{" "}
         </div>
       </main>
     </div>

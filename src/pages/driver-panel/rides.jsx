@@ -1,23 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import axios from "axios";
 import Header from "../../components/driver-panel/header";
-
-const totalListings = 55; // Total number of listings
-const listingData = [
-  { name: "Active", value: 45, color: "#8B5CF6", bgColor: "#EDE9FE" },
-  { name: "Inactive", value: 5, color: "#4C1D95", bgColor: "#F3E8FF" },
-  { name: "Removed", value: 5, color: "#EF4444", bgColor: "#FEE2E2" },
-];
-
-// Recent listings data
-const recentListings = [
-  { id: 1, name: "Tesla S", date: "05/09/2024", status: "Active" },
-  { id: 2, name: "Honda Civic", date: "05/09/2024", status: "Inactive" },
-  { id: 3, name: "BMW", date: "05/09/2024", status: "Removed" },
-];
+import { BaseURL } from "../../utils/BaseURL";
+import { DotLoader } from "react-spinners"; // Import DotLoader
 
 const Card = ({ children, className = "", ...props }) => (
   <div className={`bg-white rounded-lg shadow-sm ${className}`} {...props}>
@@ -28,6 +17,12 @@ const Card = ({ children, className = "", ...props }) => (
 export default function TotalListings() {
   const [selectedOption, setSelectedOption] = useState("This Month");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [totalRides, setTotalRides] = useState(0);
+  const [acceptedPercentage, setAcceptedPercentage] = useState(0);
+  const [canceledPercentage, setCanceledPercentage] = useState(0);
+  const [ridesData, setRidesData] = useState([]);
+  const [recentListings, setRecentListings] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -37,6 +32,65 @@ export default function TotalListings() {
     setSelectedOption(option);
     setIsDropdownOpen(false);
   };
+
+  // Fetch ride data
+  useEffect(() => {
+    const fetchRides = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const { data } = await axios.get(`${BaseURL}/rides/driver`, config);
+        console.log("rides", data);
+        if (data && data.driverRides) {
+          const rides = data.driverRides;
+          const total = rides.length;
+
+          const acceptedRides = rides.filter(
+            (ride) => ride.status === "accepted"
+          ).length;
+          const canceledRides = rides.filter(
+            (ride) => ride.status === "canceled"
+          ).length;
+
+          setTotalRides(total || 0);
+
+          const acceptedPct =
+            total > 0 ? ((acceptedRides / total) * 100).toFixed(1) : 0;
+          const canceledPct =
+            total > 0 ? ((canceledRides / total) * 100).toFixed(1) : 0;
+
+          setAcceptedPercentage(acceptedPct);
+          setCanceledPercentage(canceledPct);
+
+          setRidesData([
+            { name: "Accepted", value: acceptedRides, color: "#8257E9" },
+            { name: "Canceled", value: canceledRides, color: "#4C1D95" },
+          ]);
+
+          // Set recent listings based on the rides data
+          const recent = rides.slice(0, 3).map((ride) => ({
+            id: ride._id,
+            name: ride.vehicle_name, // Replace with correct field
+            date: new Date(ride.createdAt).toLocaleDateString(), // Replace with correct date field
+            status: ride.status,
+            pickupLocation: ride.pickupLocation,
+            fare: ride.fare,
+          }));
+          setRecentListings(recent);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Set loading to false once data is fetched
+      }
+    };
+
+    fetchRides();
+  }, []);
 
   return (
     <div className="w-full min-h-screen">
@@ -88,17 +142,14 @@ export default function TotalListings() {
           </div>
 
           <div className="flex justify-center items-center space-x-10 mt-8">
-            {listingData.map((data, index) => (
+            {ridesData.map((data, index) => (
               <div key={index} className="text-center">
                 <ResponsiveContainer width={200} height={200}>
                   <PieChart>
                     <Pie
                       data={[
                         { value: data.value, color: data.color },
-                        {
-                          value: totalListings - data.value,
-                          color: data.bgColor,
-                        },
+                        { value: totalRides - data.value, color: "#F3E8FF" },
                       ]}
                       dataKey="value"
                       outerRadius={80}
@@ -108,7 +159,7 @@ export default function TotalListings() {
                       isAnimationActive={true}
                     >
                       <Cell key="value" fill={data.color} />
-                      <Cell key="bg" fill={data.bgColor} />
+                      <Cell key="bg" fill="#F3E8FF" />
                     </Pie>
                     <text
                       x="50%"
@@ -138,38 +189,49 @@ export default function TotalListings() {
         {/* Recent Listings */}
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent</h3>
-          <div className="space-y-4">
-            {recentListings.map((listing) => (
-              <Card
-                key={listing.id}
-                className="flex items-center justify-between p-4"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-auto h-12">
-                    <img
-                      src="/images/BMW.png"
-                      alt=""
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-medium">{listing.name}</p>
-                    <p className="text-sm text-gray-500">{listing.date}</p>
-                  </div>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    listing.status === "Active"
-                      ? "bg-purple-100 text-purple-600"
-                      : listing.status === "Inactive"
-                      ? "bg-gray-100 text-gray-600"
-                      : "bg-red-100 text-red-600"
-                  }`}
+          <div>
+            {loading ? (
+              <div className="flex justify-center">
+                <DotLoader color="#8257E9" size={60} />{" "}
+                {/* Show loader while fetching data */}
+              </div>
+            ) : (
+              recentListings.map((listing) => (
+                <Card
+                  key={listing.id}
+                  className="flex items-center justify-between p-4"
                 >
-                  {listing.status}
-                </span>
-              </Card>
-            ))}
+                  <div className="flex items-center space-x-4">
+                    <div className="w-auto h-12">
+                      <img
+                        src="/images/BMW.png"
+                        alt=""
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                    <div>
+                      {/* Pickup Location */}
+                      <p className="font-medium">{listing.pickupLocation}</p>
+
+                      {/* Formatted Date */}
+                      <p className="text-sm text-gray-500">{listing.date}</p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      listing.status === "accepted"
+                        ? "bg-purple-100 text-purple-600"
+                        : listing.status === "canceled"
+                        ? "bg-red-100 text-red-600"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {listing.status}
+                  </span>
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </div>

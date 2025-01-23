@@ -32,13 +32,13 @@ const Header = () => {
         {/* Desktop Nav */}
         <nav className="hidden md:flex space-x-9">
           {[
-            { name: "ride", link: "/ride" },
+            { name: "Ride", link: "/ride" },
             { name: "Rent", link: "/rent/cars" },
             { name: "Driver", link: "/drivers" },
             { name: "Package", link: "/package" },
-            { name: "Reserve", link: "/reserve" },
+            { name: "Intercity Ride", link: "/reserve" },
             { name: "Bill", link: "/bill" },
-            { name: "More", link: "/carpool" },
+            // { name: "More", link: "/carpool" },
           ].map((navItem) => (
             <Link
               key={navItem.name}
@@ -162,13 +162,13 @@ const Header = () => {
 
         <nav className="space-y-6 px-4 py-8">
           {[
-            { name: "ride", link: "/ride" },
+            { name: "Ride", link: "/ride" },
             { name: "Rent", link: "/rent/cars" },
             { name: "Driver", link: "/drivers" },
             { name: "Package", link: "/package" },
-            { name: "Reserve", link: "/reserve" },
+            { name: "Intercity Ride", link: "/reserve" },
             { name: "Bill", link: "/bill" },
-            { name: "More", link: "/carpool" },
+            // { name: "More", link: "/carpool" },
           ].map((navItem) => (
             <Link
               key={navItem.name}

@@ -25,7 +25,7 @@ const Header = () => {
 
         {/* Navigation */}
         <nav className="hidden md:flex space-x-9">
-          {["Ride", "Rent", "Driver", "Package", "Reserve", "Bill", "More"].map(
+          {["Ride", "Rent", "Driver", "Package", "Reserve", "Bill"].map(
             (navItem) => (
               <a
                 key={navItem}

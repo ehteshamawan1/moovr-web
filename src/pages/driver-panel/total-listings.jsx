@@ -1,23 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import Header from "../../components/driver-panel/header";
-
-const totalListings = 55; // Total number of listings
-const listingData = [
-  { name: "Active", value: 45, color: "#8B5CF6", bgColor: "#EDE9FE" },
-  { name: "Inactive", value: 5, color: "#4C1D95", bgColor: "#F3E8FF" },
-  { name: "Removed", value: 5, color: "#EF4444", bgColor: "#FEE2E2" },
-];
-
-// Recent listings data
-const recentListings = [
-  { id: 1, name: "Tesla S", date: "05/09/2024", status: "Active" },
-  { id: 2, name: "Honda Civic", date: "05/09/2024", status: "Inactive" },
-  { id: 3, name: "BMW", date: "05/09/2024", status: "Removed" },
-];
+import axios from "axios";
+import { BaseURL } from "../../utils/BaseURL";
 
 const Card = ({ children, className = "", ...props }) => (
   <div className={`bg-white rounded-lg shadow-sm ${className}`} {...props}>
@@ -28,6 +16,76 @@ const Card = ({ children, className = "", ...props }) => (
 export default function TotalListings() {
   const [selectedOption, setSelectedOption] = useState("This Month");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [listingData, setListingData] = useState([]);
+  const [recentListings, setRecentListings] = useState([]);
+  const [totalListings, setTotalListings] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch car listings based on driverId
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        const driverId = userData?._id;
+
+        if (driverId) {
+          const response = await axios.get(
+            `${BaseURL}/cars/driver/${driverId}/cars`
+          );
+          const cars = response.data.cars || [];
+
+          // Update the total number of listings and categorize data
+          setTotalListings(cars.length);
+
+          const activeCount = cars.filter(
+            (car) => car.status === "active"
+          ).length;
+          const inactiveCount = cars.filter(
+            (car) => car.status === "inactive"
+          ).length;
+          const removedCount = cars.filter(
+            (car) => car.status === "removed"
+          ).length;
+
+          setListingData([
+            {
+              name: "Active",
+              value: activeCount,
+              color: "#8B5CF6",
+              bgColor: "#EDE9FE",
+            },
+            {
+              name: "Inactive",
+              value: inactiveCount,
+              color: "#4C1D95",
+              bgColor: "#F3E8FF",
+            },
+            {
+              name: "Removed",
+              value: removedCount,
+              color: "#EF4444",
+              bgColor: "#FEE2E2",
+            },
+          ]);
+
+          // Extract recent listings (using the first 3 as recent)
+          const recent = cars.slice(0, 3).map((car) => ({
+            id: car._id,
+            name: car.vehicleName,
+            date: new Date(car.createdAt).toLocaleDateString(),
+            status: car.status.charAt(0).toUpperCase() + car.status.slice(1),
+          }));
+          setRecentListings(recent);
+        }
+      } catch (error) {
+        console.error("Error fetching car listings:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListings();
+  }, []);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -46,7 +104,7 @@ export default function TotalListings() {
       <div className="p-6 max-w-6xl mx-auto">
         {/* Listing Stats */}
         <Card className="p-6 ">
-          <div className="flex  justify-between items-center">
+          <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Total Listings</h2>
             <div className="relative">
               <button
@@ -139,37 +197,41 @@ export default function TotalListings() {
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent</h3>
           <div className="space-y-4">
-            {recentListings.map((listing) => (
-              <div
-                key={listing.id}
-                className="flex shadow-md border rounded-md border-gray-50 items-center justify-between p-4"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-auto h-12">
-                    <img
-                      src="/images/BMW.png"
-                      alt=""
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-medium">{listing.name}</p>
-                    <p className="text-sm text-gray-500">{listing.date}</p>
-                  </div>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    listing.status === "Active"
-                      ? "bg-purple-100 text-purple-600"
-                      : listing.status === "Inactive"
-                      ? "bg-gray-100 text-gray-600"
-                      : "bg-red-100 text-red-600"
-                  }`}
+            {loading ? (
+              <div className="text-center text-gray-600">Loading...</div>
+            ) : (
+              recentListings.map((listing) => (
+                <div
+                  key={listing.id}
+                  className="flex shadow-md border rounded-md border-gray-50 items-center justify-between p-4"
                 >
-                  {listing.status}
-                </span>
-              </div>
-            ))}
+                  <div className="flex items-center space-x-4">
+                    <div className="w-auto h-12">
+                      <img
+                        src="/images/BMW.png"
+                        alt=""
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-medium">{listing.name}</p>
+                      <p className="text-sm text-gray-500">{listing.date}</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      listing.status === "Active"
+                        ? "bg-purple-100 text-purple-600"
+                        : listing.status === "Inactive"
+                        ? "bg-gray-100 text-gray-600"
+                        : "bg-red-100 text-red-600"
+                    }`}
+                  >
+                    {listing.status}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
