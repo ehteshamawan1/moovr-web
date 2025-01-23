@@ -1,18 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../../components/driver-panel/header";
 import { BiArrowBack } from "react-icons/bi";
-import {
-  FaChevronDown,
-  FaChevronRight,
-  FaChevronUp,
-  FaTrashAlt,
-} from "react-icons/fa";
+import { FaChevronDown, FaChevronUp, FaTrashAlt } from "react-icons/fa";
+import axios from "axios";
+import { BaseURL } from "../../../utils/BaseURL";
+import toast from "react-hot-toast";
+import { DotLoader } from "react-spinners";
 
 const DriverActivity = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("Available");
   const [priceValue, setPriceValue] = useState("");
   const [activeItemIndex, setActiveItemIndex] = useState(null); // Track active item
+  const [activities, setActivities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(`${BaseURL}/activity?page=1`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const sortedActivities = response?.data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setActivities(sortedActivities);
+      } catch (error) {
+        toast.error("Failed to fetch activities. Please try again.");
+        console.error("Error fetching activities:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -23,10 +48,41 @@ const DriverActivity = () => {
     setIsDropdownOpen(false);
   };
 
-  // Handle item click and toggle its active state
   const handleActivityClick = (index) => {
     setActiveItemIndex(index === activeItemIndex ? null : index);
   };
+
+  const handleDeleteActivity = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `${BaseURL}/activity/hide/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setActivities((prevActivities) =>
+        prevActivities.filter((activity) => activity._id !== id)
+      );
+      toast.success("Activity deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to delete activity. Please try again.");
+      console.error("Error deleting activity:", error);
+    }
+  };
+
+  // Group activities by date
+  const groupedActivities = activities.reduce((acc, activity) => {
+    const date = new Date(activity.createdAt).toLocaleDateString(); // Format date
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(activity);
+    return acc;
+  }, {});
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -40,118 +96,47 @@ const DriverActivity = () => {
             <BiArrowBack size={23} />
             <h1 className="text-lg font-semibold">Back</h1>
           </div>
-          <div className="relative">
-            {/* Dropdown Button */}
-            <button
-              onClick={toggleDropdown}
-              className="flex items-center justify-between px-4 py-2 bg-purple-100 text-purple-500 rounded-full shadow-sm"
-            >
-              {selectedOption}
-              {isDropdownOpen ? (
-                <FaChevronUp className="ml-2" />
-              ) : (
-                <FaChevronDown className="ml-2" />
-              )}
-            </button>
+        </div>
 
-            {/* Dropdown Menu */}
-            {isDropdownOpen && (
-              <div className="absolute z-50 top-12 right-0 w-56 bg-white shadow-lg rounded-lg mt-1 p-2">
-                <ul className="flex flex-col">
-                  <li
-                    onClick={() => handleOptionSelect("All")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    All
-                  </li>
-                  <li
-                    onClick={() => handleOptionSelect("Available")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    Available
-                  </li>
-                  <li className="px-4 py-2 flex justify-between items-center gap-4">
-                    <label>Price</label>
-                    <input
-                      type="text"
-                      value={priceValue}
-                      onChange={(e) => setPriceValue(e.target.value)}
-                      placeholder="Price"
-                      className="w-2/3 mt-1 px-2 py-1 bg-gray-100 rounded text-gray-500 focus:outline-none"
-                    />
-                  </li>
-                </ul>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <DotLoader color="#A75AF2" />
+          </div>
+        ) : (
+          <div className="mt-8 space-y-6">
+            {Object.entries(groupedActivities).map(([date, activities]) => (
+              <div key={date}>
+                {/* Date Heading */}
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                  {date}
+                </h2>
+                {activities.map((activity, index) => (
+                  <ActivityItem
+                    key={index}
+                    index={index}
+                    isActive={activeItemIndex === index}
+                    onClick={handleActivityClick}
+                    onDelete={() => handleDeleteActivity(activity._id)}
+                    text={activity.message}
+                    time={new Date(activity.createdAt).toLocaleTimeString()}
+                  />
+                ))}
               </div>
-            )}
+            ))}
           </div>
-        </div>
-
-        {/* Activity Sections */}
-        <div className="mt-8 space-y-6">
-          {/* Today Section */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-700">Today</h2>
-            <div className="mt-4 space-y-4">
-              {/* Activity Item */}
-              <ActivityItem
-                index={0}
-                isActive={activeItemIndex === 0}
-                onClick={handleActivityClick}
-                logo="/path-to-your-logo.png"
-                text="You have successfully Payout for a ride"
-                time="9:55 AM"
-              />
-              <ActivityItem
-                index={1}
-                isActive={activeItemIndex === 1}
-                onClick={handleActivityClick}
-                logo="/path-to-your-logo.png"
-                text="Your parcel has successfully been delivered"
-                time="7:50 AM"
-              />
-            </div>
-          </div>
-
-          {/* Previous Section */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-700">04/09/2024</h2>
-            <div className="mt-4 space-y-4">
-              <ActivityItem
-                index={2}
-                isActive={activeItemIndex === 2}
-                onClick={handleActivityClick}
-                logo="/path-to-your-logo.png"
-                text="Your ride has ended."
-                time="7:50 AM"
-              />
-              <ActivityItem
-                index={3}
-                isActive={activeItemIndex === 3}
-                onClick={handleActivityClick}
-                logo="/path-to-your-logo.png"
-                text="Your ride has been scheduled successfully."
-                time="7:50 AM"
-              />
-              <ActivityItem
-                index={4}
-                isActive={activeItemIndex === 4}
-                onClick={handleActivityClick}
-                logo="/path-to-your-logo.png"
-                text="Your account has been recharged."
-                time="7:50 AM"
-              />
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
-const ActivityItem = ({ index, isActive, onClick, logo, text, time }) => (
+const ActivityItem = ({ index, isActive, onClick, onDelete, text, time }) => (
   <div className="relative">
     {/* Trash Button */}
-    <button className="absolute top-0 right-0 bottom-0 w-12 flex justify-center items-center bg-primaryPurple text-white rounded-r-lg">
+    <button
+      onClick={onDelete}
+      className="absolute top-0 right-0 bottom-0 w-12 flex justify-center items-center bg-primaryPurple text-white rounded-r-lg"
+    >
       <FaTrashAlt />
     </button>
 
@@ -168,10 +153,6 @@ const ActivityItem = ({ index, isActive, onClick, logo, text, time }) => (
           <p className="text-gray-500 text-[14px]">{time}</p>
         </div>
       </div>
-      <button>
-        {/* Chevron Icon */}
-        <FaChevronRight />
-      </button>
     </div>
   </div>
 );

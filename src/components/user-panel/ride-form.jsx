@@ -3,6 +3,7 @@ import axios from "axios";
 import { BaseURL } from "../../utils/BaseURL";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
+import { DotLoader } from "react-spinners";
 
 const RideForm = () => {
   const [pickupLocation, setPickupLocation] = useState(null);
@@ -13,14 +14,12 @@ const RideForm = () => {
   const [distance, setDistance] = useState(null);
   const [pickupType, setPickupType] = useState("now");
   const [scheduleTime, setScheduleTime] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const mapRef = useRef(null);
   const directionsServiceRef = useRef(null);
   const directionsRendererRef = useRef(null);
   const mapInstance = useRef(null);
   const navigate = useNavigate();
-
-  const dummyToken =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODYwN2YzY2E4NGJmODllNmRiZTc1NiIsInBob25lIjoiKzkyMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjgzNzE3NSwiZXhwIjoxNzM4MTMzMTc1fQ.MFPhjtomXz1HMRxX_FA7DpwvxFZ4e24eQLBEj7z0lhI"; // Dummy token for authorization
 
   useEffect(() => {
     const loadGoogleMapsScript = () => {
@@ -118,9 +117,11 @@ const RideForm = () => {
 
   const handleCreateRide = async () => {
     if (!pickupLocation || !dropoffLocation || distance === null) {
-      alert("Please enter valid pickup and dropoff locations.");
+      toast.error("Please enter valid pickup and dropoff locations.");
       return;
     }
+
+    setIsLoading(true);
 
     const rideData = {
       pickupLocation: pickupAddress,
@@ -133,12 +134,13 @@ const RideForm = () => {
     };
 
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.post(`${BaseURL}/rides/create`, rideData, {
         headers: {
-          Authorization: dummyToken,
+          Authorization: `Bearer ${token}`,
         },
       });
-      alert("Ride created successfully: " + response.data.message);
+      toast.success("Ride created successfully: " + response.data.message);
 
       // Open full map with pickup and dropoff markers
       const google = window.google;
@@ -164,7 +166,9 @@ const RideForm = () => {
       calculateAndDisplayRoute();
     } catch (error) {
       console.error("Error creating ride:", error);
-      alert("Failed to create ride. Please try again.");
+      toast.error("Failed to create ride. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -226,7 +230,7 @@ const RideForm = () => {
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
           >
-            Create Ride
+            {isLoading ? <DotLoader color="#fff" size={24} /> : "Create Ride"}
           </button>
         </form>
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaChevronUp } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const PaymentDropdown = ({ pageLink }) => {
+const PaymentDropdown = ({ onCreatePackage }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("Debit Card");
 
@@ -13,6 +13,10 @@ const PaymentDropdown = ({ pageLink }) => {
   const handleSelectPayment = (paymentMethod) => {
     setSelectedPayment(paymentMethod);
     setIsDropdownOpen(false);
+  };
+
+  const handleButtonClick = () => {
+    onCreatePackage();
   };
 
   return (
@@ -90,11 +94,12 @@ const PaymentDropdown = ({ pageLink }) => {
 
       {/* Action Button */}
       <div className="w-full ">
-        <Link to={pageLink}>
-          <button className="bg-purple-500 w-full text-white py-3 px-4 rounded-full text-sm font-semibold hover:bg-purple-600">
-            Select MoovR
-          </button>
-        </Link>
+        <button
+          onClick={handleButtonClick}
+          className="bg-purple-500 w-full text-white py-3 px-4 rounded-full text-sm font-semibold hover:bg-purple-600"
+        >
+          Select MoovR
+        </button>
       </div>
     </div>
   );

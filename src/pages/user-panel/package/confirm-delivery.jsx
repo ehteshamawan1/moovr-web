@@ -1,12 +1,151 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Header from "../../../components/user-panel/header"; // Import your Header component
-import { FaArrowLeft, FaMapMarkerAlt } from "react-icons/fa"; // For the map marker icon
+import { FaArrowLeft } from "react-icons/fa"; // For the map marker icon
 import { IoSearch } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 
 const ConfirmDelivery = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { pickupLocation, pickupAddress } = location.state;
+  const [deliveryLocation, setDeliveryLocation] = useState(null);
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [isMapsReady, setIsMapsReady] = useState(false);
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const directionsServiceRef = useRef(null);
+  const directionsRendererRef = useRef(null);
+  const pickupMarkerRef = useRef(null);
+  const deliveryMarkerRef = useRef(null);
+
+  useEffect(() => {
+    const loadGoogleMapsScript = () => {
+      if (!window.google) {
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyC9NY_mMXuLB2oTMbZMG4vYO0Y0VqfbrlQ&libraries=places`;
+        script.async = true;
+        script.onload = initializeMap;
+        document.head.appendChild(script);
+      } else {
+        initializeMap();
+      }
+    };
+
+    const initializeMap = () => {
+      const google = window.google;
+      mapInstance.current = new google.maps.Map(mapRef.current, {
+        center: { lat: 51.505, lng: -0.09 },
+        zoom: 13,
+        disableDefaultUI: true, // Disable default UI controls
+      });
+
+      directionsServiceRef.current = new google.maps.DirectionsService();
+      directionsRendererRef.current = new google.maps.DirectionsRenderer({
+        suppressMarkers: true, // Suppress default markers
+      });
+      directionsRendererRef.current.setMap(mapInstance.current);
+
+      // Add pickup marker
+      pickupMarkerRef.current = new google.maps.Marker({
+        position: pickupLocation,
+        map: mapInstance.current,
+        label: "P",
+      });
+
+      initializeAutocomplete("delivery");
+
+      setIsMapsReady(true);
+    };
+
+    const initializeAutocomplete = (type) => {
+      const input = document.getElementById(`${type}-input`);
+      const autocomplete = new google.maps.places.Autocomplete(input);
+      autocomplete.bindTo("bounds", mapInstance.current);
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry || !place.geometry.location) return;
+
+        const location = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        };
+
+        setDeliveryLocation(location);
+        setDeliveryAddress(place.formatted_address || "");
+
+        mapInstance.current.setCenter(place.geometry.location);
+        mapInstance.current.setZoom(14);
+
+        // Add delivery marker
+        if (deliveryMarkerRef.current) {
+          deliveryMarkerRef.current.setMap(null);
+        }
+        deliveryMarkerRef.current = new google.maps.Marker({
+          position: location,
+          map: mapInstance.current,
+          label: "D",
+        });
+
+        // Display route from pickup to delivery
+        calculateAndDisplayRoute(pickupLocation, location);
+      });
+    };
+
+    const calculateAndDisplayRoute = (origin, destination) => {
+      const directionsService = directionsServiceRef.current;
+      const directionsRenderer = directionsRendererRef.current;
+
+      if (!directionsService || !directionsRenderer) {
+        console.error("Google Maps services not initialized yet.");
+        return;
+      }
+
+      directionsService.route(
+        {
+          origin,
+          destination,
+          travelMode: window.google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+          if (status === "OK") {
+            directionsRenderer.setDirections(result);
+
+            // Align markers with the route
+            const leg = result.routes[0].legs[0];
+            pickupMarkerRef.current.setPosition(leg.start_location);
+            deliveryMarkerRef.current.setPosition(leg.end_location);
+          } else {
+            console.error(`Directions request failed due to ${status}`);
+          }
+        }
+      );
+    };
+
+    loadGoogleMapsScript();
+  }, [pickupLocation]);
+
+  const handleConfirmDelivery = () => {
+    if (!deliveryLocation) {
+      toast.error("Please select a valid delivery location.");
+      return;
+    }
+
+    // Navigate to the selection page with the selected locations
+    navigate("/package/selection", {
+      state: {
+        pickupLocation,
+        deliveryLocation,
+        pickupAddress,
+        deliveryAddress,
+      },
+    });
+  };
+
   return (
     <div className="h-screen w-screen">
+      <Toaster />
       {/* Header */}
       <Header />
 
@@ -14,15 +153,10 @@ const ConfirmDelivery = () => {
       <div className="relative h-full">
         {/* Map Background */}
         <div className="absolute inset-0">
-          <img
-            title="Map"
-            src="/images/full-map-img.png"
-            alt="Map"
-            className="w-full h-full object-cover"
-          />
+          <div ref={mapRef} className="w-full h-full" />
         </div>
 
-        {/* Floating Card for Pickup Selection */}
+        {/* Floating Card for Delivery Selection */}
         <div className="absolute top-[10%] left-[10%] transform md:w-[400px]  space-y-4 w-[80%] ">
           {/* Search Input */}
 
@@ -40,8 +174,9 @@ const ConfirmDelivery = () => {
               size={20}
             />
             <input
+              id="delivery-input"
               type="text"
-              placeholder="Select pickup point"
+              placeholder="Select delivery point"
               className="w-full pl-12 px-6 py-4 border rounded-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
@@ -55,12 +190,12 @@ const ConfirmDelivery = () => {
 
             {/* Confirm Button */}
             <div className="w-full flex">
-              <Link
-                to={"/package/booked"}
+              <button
+                onClick={handleConfirmDelivery}
                 className="w-full text-center py-3 rounded-full bg-purple-500 text-white font-semibold hover:bg-purple-600"
               >
                 Confirm
-              </Link>
+              </button>
             </div>
           </div>
         </div>

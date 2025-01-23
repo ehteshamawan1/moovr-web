@@ -4,6 +4,8 @@ import { BiArrowBack } from "react-icons/bi";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { BaseURL } from "../../../utils/BaseURL";
+import { DotLoader } from "react-spinners";
+import toast from "react-hot-toast";
 
 const RentCars = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -24,8 +26,7 @@ const RentCars = () => {
 
   // Function to fetch cars from the API with token
   const fetchCars = async () => {
-    const token =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM";
+    const token = localStorage.getItem("token");
 
     if (!token) {
       setError("No authentication token found");
@@ -42,8 +43,6 @@ const RentCars = () => {
         },
       });
 
-      console.log(response);
-
       if (!response.ok) {
         throw new Error("Failed to fetch cars");
       }
@@ -52,6 +51,7 @@ const RentCars = () => {
       setCars(data.carListings); // Assuming the API response contains a 'carListings' array
     } catch (error) {
       setError(error.message);
+      toast.error(error.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -120,50 +120,54 @@ const RentCars = () => {
         </div>
 
         {/* Loading and Error Handling */}
-        {loading && <p>Loading cars...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-
-        {/* Cars Grid */}
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 justify-center">
-          {cars.length === 0 && !loading && <p>No cars available</p>}
-          {cars
-            .filter((car) => {
-              if (selectedOption === "All") return true;
-              if (selectedOption === "Available")
-                return car.status === "Available";
-              return true;
-            })
-            .map((car) => (
-              <Link to={`/rent/car/details/${car._id}`} key={car.id}>
-                <div className="bg-white rounded-lg shadow-lg p-4 flex flex-col cursor-pointer">
-                  <img
-                    src={car.image || "/images/default-car.png"}
-                    alt={car.name}
-                    className="w-full h-40 object-cover mb-4"
-                  />
-                  <h2 className="font-semibold text-lg text-gray-800">
-                    {car.name}
-                  </h2>
-                  <div className="flex gap-2 pt-3 items-center">
-                    <img src="/icons/ride/map-pin.svg" alt="Location icon" />
-                    <p className="text-sm text-gray-500">{car.location}</p>
-                  </div>
-                  <div className="flex items-center justify-between w-full mt-2">
-                    <div className="flex gap-2 items-center">
-                      <img src="/icons/ride/seats.svg" alt="Seats icon" />
-                      <p className="text-gray-700">{car.seats} seats</p>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <DotLoader color="#A75AF2" />
+          </div>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : (
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 justify-center">
+            {cars.length === 0 && <p>No cars available</p>}
+            {cars
+              .filter((car) => {
+                if (selectedOption === "All") return true;
+                if (selectedOption === "Available")
+                  return car.status === "Available";
+                return true;
+              })
+              .map((car) => (
+                <Link to={`/rent/car/details/${car._id}`} key={car.id}>
+                  <div className="bg-white rounded-lg shadow-lg p-4 flex flex-col cursor-pointer">
+                    <img
+                      src={car.image || "/images/default-car.png"}
+                      alt={car.name}
+                      className="w-full h-40 object-cover mb-4"
+                    />
+                    <h2 className="font-semibold text-lg text-gray-800">
+                      {car.name}
+                    </h2>
+                    <div className="flex gap-2 pt-3 items-center">
+                      <img src="/icons/ride/map-pin.svg" alt="Location icon" />
+                      <p className="text-sm text-gray-500">{car.location}</p>
                     </div>
-                    <div className="flex gap-2 items-center">
-                      <img src="/icons/ride/coins.svg" alt="Price icon" />
-                      <p className="font-medium text-gray-900">
-                        ₦{car.price}/h
-                      </p>
+                    <div className="flex items-center justify-between w-full mt-2">
+                      <div className="flex gap-2 items-center">
+                        <img src="/icons/ride/seats.svg" alt="Seats icon" />
+                        <p className="text-gray-700">{car.seats} seats</p>
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <img src="/icons/ride/coins.svg" alt="Price icon" />
+                        <p className="font-medium text-gray-900">
+                          ₦{car.price}/h
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-        </div>
+                </Link>
+              ))}
+          </div>
+        )}
       </div>
     </div>
   );

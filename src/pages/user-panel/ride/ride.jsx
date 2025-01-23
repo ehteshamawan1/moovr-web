@@ -1,10 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../../../components/user-panel/header";
 import Carousel from "../../../components/user-panel/carousel";
 import RideForm from "../../../components/user-panel/ride-form";
 import { BaseURL } from "../../../utils/BaseURL";
+import { DotLoader } from "react-spinners";
+import toast from "react-hot-toast";
 
 const Ride = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     if (navigator.geolocation) {
       const watchId = navigator.geolocation.watchPosition(
@@ -14,6 +18,7 @@ const Ride = () => {
         },
         (error) => {
           console.error("Error fetching location:", error);
+          toast.error("Error fetching location.");
         },
         { enableHighAccuracy: true }
       );
@@ -23,6 +28,7 @@ const Ride = () => {
       };
     } else {
       console.error("Geolocation is not supported by this browser.");
+      toast.error("Geolocation is not supported by this browser.");
     }
   }, []);
 
@@ -34,6 +40,7 @@ const Ride = () => {
 
       if (!token) {
         console.error("No token found in localStorage.");
+        toast.error("No token found in localStorage.");
         return;
       }
 
@@ -51,19 +58,29 @@ const Ride = () => {
 
       if (!response.ok) {
         console.error("Failed to update location:", responseData);
+        toast.error("Failed to update location.");
       }
     } catch (err) {
       console.error("Error updating location:", err);
+      toast.error("Error updating location.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div>
       <Header />
-      <div className="grid md:grid-cols-1 min-h-[500px] items-center p-4">
-        <RideForm />
-        {/* <Map /> */}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <DotLoader color="#A75AF2" />
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-1 min-h-[500px] items-center p-4">
+          <RideForm />
+          {/* <Map /> */}
+        </div>
+      )}
       <Carousel />
     </div>
   );
