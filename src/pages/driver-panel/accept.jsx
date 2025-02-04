@@ -10,13 +10,12 @@ import { DotLoader } from "react-spinners";
 
 const Accept = () => {
   const [availableRides, setAvailableRides] = useState([]);
-  const [availableReserves, setAvailableReserves] = useState([]);
+  const [availablePackages, setAvailablePackages] = useState([]);
   const [availableIntercityRides, setAvailableIntercityRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("rides");
   const navigate = useNavigate();
 
-  // Fetch available rides when the component is mounted
   useEffect(() => {
     const fetchAvailableRides = async () => {
       try {
@@ -29,7 +28,7 @@ const Accept = () => {
                 Authorization: `Bearer ${token}`,
               },
             }),
-            axios.get(`${BaseURL}/reserve/get/available`, {
+            axios.get(`${BaseURL}/package/available`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
@@ -41,8 +40,13 @@ const Accept = () => {
             }),
           ]);
 
+        // Log the responses for debugging
+        console.log("Rides Response:", ridesResponse?.data);
+        console.log("Packages Response:", reserveResponse);
+        console.log("Intercity Rides Response:", intercityResponse?.data);
+
         setAvailableRides(ridesResponse?.data?.availableRides || []);
-        setAvailableReserves(reserveResponse?.data?.availableRides || []);
+        setAvailablePackages(reserveResponse?.data?.availablePackages || []); // Correct key
         setAvailableIntercityRides(
           intercityResponse?.data?.availableRides || []
         );
@@ -55,29 +59,56 @@ const Accept = () => {
     };
 
     fetchAvailableRides();
-  }, []); // Empty dependency array to run the effect once on mount
+  }, []);
 
   const handleAccept = async (ride) => {
     try {
-      const response = await axios.post(
-        `${BaseURL}/rides/accept/${ride._id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      let response;
+      const token = localStorage.getItem("token");
+
+      if (activeTab === "rides") {
+        response = await axios.post(
+          `${BaseURL}/rides/accept/${ride._id}`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else if (activeTab === "packages") {
+        response = await axios.post(
+          `${BaseURL}/package/accept/${ride._id}`, // Corrected URL
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else if (activeTab === "intercity") {
+        response = await axios.post(
+          `${BaseURL}/intercityrides/accept/${ride._id}`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
 
       if (response.status === 200) {
-        // Remove the accepted ride from the available rides
+        // Remove the accepted ride from the respective tab
         if (activeTab === "rides") {
           setAvailableRides((prevRides) =>
             prevRides.filter((r) => r._id !== ride._id)
           );
-        } else if (activeTab === "reserves") {
-          setAvailableReserves((prevRides) =>
+        } else if (activeTab === "packages") {
+          setAvailablePackages((prevRides) =>
             prevRides.filter((r) => r._id !== ride._id)
           );
         } else if (activeTab === "intercity") {
@@ -86,7 +117,7 @@ const Accept = () => {
           );
         }
         toast.success("Ride accepted successfully!");
-        navigate("/d/reached", { state: { ride } });
+        navigate("/d/reached", { state: { ride, activeTab } });
       } else {
         toast.error("Failed to accept the ride. Please try again.");
       }
@@ -125,7 +156,7 @@ const Accept = () => {
                 </h2>
                 <p className="font-[600] text-[24px]">
                   <span className="text-[14px] mr-1">₦</span>
-                  {ride.price}
+                  {ride.fare}
                 </p>
                 <p className="text-[12px] text-black/50">Includes 5% tax</p>
                 <p className="flex items-center gap-2 text-[12px] text-black">
@@ -199,13 +230,13 @@ const Accept = () => {
           </button>
           <button
             className={`px-4 py-2 mx-2 rounded-full ${
-              activeTab === "reserves"
+              activeTab === "packages"
                 ? "bg-primaryPurple text-white"
                 : "bg-white"
             }`}
-            onClick={() => setActiveTab("reserves")}
+            onClick={() => setActiveTab("packages")}
           >
-            Reserves
+            packages
           </button>
           <button
             className={`px-4 py-2 mx-2 rounded-full ${
@@ -220,7 +251,7 @@ const Accept = () => {
         </div>
 
         {activeTab === "rides" && renderRides(availableRides)}
-        {activeTab === "reserves" && renderRides(availableReserves)}
+        {activeTab === "packages" && renderRides(availablePackages)}
         {activeTab === "intercity" && renderRides(availableIntercityRides)}
       </main>
     </div>

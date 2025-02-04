@@ -66,7 +66,12 @@ export default function Dashboard() {
   const [totalRides, setTotalRides] = useState(0);
   const [acceptedPercentage, setAcceptedPercentage] = useState(0);
   const [canceledPercentage, setCanceledPercentage] = useState(0);
-  const [totalListings, setTotalListings] = useState(0); // State for total listings
+  const [totalListings, setTotalListings] = useState(0);
+  const [averageRating, setAverageRating] = useState(0); // State for average rating
+  const [reviewsData, setReviewsData] = useState([]); // State for reviews data
+  const [listingsData, setListingsData] = useState([]); // State for reviews data
+  const [totalRevenue, setTotalRevenue] = useState(0); // State for total revenue
+  const [totalBookings, setTotalBookings] = useState(0); // State for total bookings
 
   // Reusable function for API calls
   const fetchData = async (url, config = {}) => {
@@ -78,6 +83,84 @@ export default function Dashboard() {
       return null;
     }
   };
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        const driverId = userData?._id;
+
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+
+        const response = await axios.get(
+          `${BaseURL}/rent/rented-cars-by-driver/${driverId}`, // Adjust API if needed
+          config
+        );
+
+        const rentedCars = response.data.rentedCars || [];
+
+        // Set total bookings
+        setTotalBookings(rentedCars.length);
+      } catch (error) {
+        console.error("Error fetching bookings data:", error);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  // Fetch revenue data
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+
+        const response = await axios.get(`${BaseURL}/revenue`, config);
+
+        if (response.data) {
+          setTotalRevenue(response.data.Total || 0); // Set the total revenue
+        }
+      } catch (error) {
+        console.error("Error fetching revenue:", error);
+      }
+    };
+
+    fetchRevenue();
+  }, []);
+
+  // Fetch reviews data
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+
+        const response = await axios.get(`${BaseURL}/reviews`, config);
+        const { reviews, averageRating } = response.data;
+
+        setReviewsData(reviews);
+        setAverageRating(averageRating);
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      }
+    };
+
+    fetchReviews();
+  }, []);
 
   // Fetch ride data
   useEffect(() => {
@@ -137,7 +220,32 @@ export default function Dashboard() {
             `${BaseURL}/cars/driver/${driverId}/cars`
           );
           const cars = response.data.cars || [];
-          setTotalListings(cars.length);
+
+          // Calculate the status breakdown (Active, Inactive, Cancelled)
+          const activeListings = cars.filter(
+            (car) => car.status === "active"
+          ).length;
+          const inactiveListings = cars.filter(
+            (car) => car.status === "inactive"
+          ).length;
+          const canceledListings = cars.filter(
+            (car) => car.status === "canceled"
+          ).length;
+
+          setTotalListings(cars.length); // Set total listings
+
+          // Adjust Pie chart data based on the status
+          if (inactiveListings === cars.length) {
+            setListingsData([
+              { name: "Inactive", value: cars.length, color: "#7C3AED" },
+            ]); // All inactive
+          } else {
+            setListingsData([
+              { name: "Active", value: activeListings, color: "#A855F7" },
+              { name: "Inactive", value: inactiveListings, color: "#7C3AED" },
+              { name: "Cancelled", value: canceledListings, color: "#EF4444" },
+            ]);
+          }
         }
       } catch (error) {
         console.error("Error fetching car listings:", error);
@@ -159,13 +267,13 @@ export default function Dashboard() {
           {/* Revenue Card */}
           <Card className="shadow-md">
             <Link to="/d/revenue">
-              <div className="flex  justify-between items-start mb-8">
+              <div className="flex justify-between items-start mb-8">
                 <h2 className="text-gray-600">Total Revenue</h2>
                 <FilterDropdown />
               </div>
               <div className="flex flex-col items-center justify-center pt-3">
-                <p className="text-[32px] font-semibold">₦457.80</p>
-                <p className="text-sm text-gray-500 mt-1">Sept, 2024</p>
+                <p className="text-[32px] font-semibold">₦{totalRevenue}</p>
+                <p className="text-sm text-gray-500 mt-1">till now</p>
               </div>
             </Link>
           </Card>
@@ -212,7 +320,6 @@ export default function Dashboard() {
             </Link>
           </Card>
           {/* Other Cards */}
-          {/* Ratings Card */}
           <Card className="shadow-md">
             <Link to="/d/rating">
               <div className="flex justify-between items-start mb-4">
@@ -221,8 +328,12 @@ export default function Dashboard() {
               </div>
               <div className="text-center flex flex-col items-center justify-center">
                 <img src="/driver/stars.svg" alt="" />
-                <p className="text-3xl font-bold mt-4 text-gray-700">5.0</p>
-                <p className="text-gray-500">Rated by 45 people</p>
+                <p className="text-3xl font-bold mt-4 text-gray-700">
+                  {averageRating}
+                </p>
+                <p className="text-gray-500">
+                  Rated by {reviewsData.length} people
+                </p>
               </div>
             </Link>
           </Card>
@@ -236,11 +347,7 @@ export default function Dashboard() {
                 <div className="relative">
                   <PieChart width={120} height={120}>
                     <Pie
-                      data={[
-                        { name: "Active", value: 50, color: "#A855F7" },
-                        { name: "Inactive", value: 30, color: "#7C3AED" },
-                        { name: "Cancelled", value: 20, color: "#EF4444" },
-                      ]}
+                      data={listingsData} // Use dynamic listings data
                       cx={60}
                       cy={60}
                       innerRadius={40}
@@ -249,11 +356,7 @@ export default function Dashboard() {
                       endAngle={450}
                       dataKey="value"
                     >
-                      {[
-                        { value: 50, color: "#A855F7" },
-                        { value: 30, color: "#7C3AED" },
-                        { value: 20, color: "#EF4444" },
-                      ].map((entry, index) => (
+                      {listingsData.map((entry, index) => (
                         <Cell key={index} fill={entry.color} />
                       ))}
                     </Pie>
@@ -271,7 +374,6 @@ export default function Dashboard() {
               </div>
             </Link>
           </Card>
-          
           {/* Bookings Card */}
           <Card className="shadow-md">
             <Link to="/d/bookings">
@@ -279,59 +381,49 @@ export default function Dashboard() {
                 <h2 className="text-gray-600">Total Bookings</h2>
                 <FilterDropdown />
               </div>
-              <div className="flex justify-center mt-4">
-                <div className="relative">
-                  <PieChart width={120} height={120}>
-                    <Pie
-                      data={[
-                        { name: "Active", value: 50, color: "#A855F7" }, // Purple
-                        { name: "Inactive", value: 30, color: "#7C3AED" }, // Dark Purple
-                        { name: "Cancelled", value: 20, color: "#EF4444" }, // Red
-                      ]}
-                      cx={60}
-                      cy={60}
-                      innerRadius={40}
-                      outerRadius={55}
-                      startAngle={90}
-                      endAngle={450}
-                      dataKey="value"
-                    >
-                      {[
-                        { value: 50, color: "#A855F7" },
-                        { value: 30, color: "#7C3AED" },
-                        { value: 20, color: "#EF4444" },
-                      ].map((entry, index) => (
-                        <Cell key={index} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <text
-                      x="53%"
-                      y="56%"
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      className="text-2xl font-bold"
-                    >
-                      50
-                    </text>
-                  </PieChart>
-                </div>
-              </div>
-              <div className="flex justify-center gap-6 mt-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#A75AF2]" />
-                  <span>Inactive</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#572083]" />
-                  <span>Active</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#EB001B]" />
-                  <span>Removed</span>
-                </div>
+              <div className="flex flex-col items-center justify-center pt-3">
+                <PieChart width={120} height={120}>
+                  <Pie
+                    data={[
+                      {
+                        name: "Total Bookings",
+                        value: totalBookings,
+                        color: "#A855F7",
+                      },
+                      {
+                        name: "Remaining",
+                        value: 100 - totalBookings,
+                        color: "#E5E7EB",
+                      },
+                    ]}
+                    cx={60}
+                    cy={60}
+                    innerRadius={40}
+                    outerRadius={55}
+                    startAngle={90}
+                    endAngle={450}
+                    dataKey="value"
+                  >
+                    {[
+                      { name: "Total Bookings", color: "#A855F7" },
+                      { name: "Remaining", color: "#E5E7EB" },
+                    ].map((entry, index) => (
+                      <Cell key={index} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <text
+                    x="53%"
+                    y="56%"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="text-2xl font-bold"
+                  >
+                    {totalBookings}
+                  </text>
+                </PieChart>
               </div>
             </Link>
-          </Card>{" "}
+          </Card>
         </div>
       </main>
     </div>

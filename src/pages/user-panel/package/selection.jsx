@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Header from "../../../components/user-panel/header";
 import PackageCars from "../../../components/user-panel/package/selection";
 import PaymentDropdown from "../../../components/user-panel/package/payment";
@@ -8,6 +8,7 @@ import { BaseURL } from "../../../utils/BaseURL";
 import toast from "react-hot-toast";
 
 const PackageCarSelection = () => {
+  const [selectedPayment, setSelectedPayment] = useState("Debit Card");
   const location = useLocation();
   const navigate = useNavigate();
   const { pickupLocation, deliveryLocation, pickupAddress, deliveryAddress } =
@@ -92,16 +93,18 @@ const PackageCarSelection = () => {
 
   const handleCreatePackage = async () => {
     const token = localStorage.getItem("token");
+
     const packageData = {
       pickupLocation: pickupAddress,
       dropoffLocation: deliveryAddress,
       pickupCoordinates: [pickupLocation.lat, pickupLocation.lng],
       dropoffCoordinates: [deliveryLocation.lat, deliveryLocation.lng],
       packageDetails: "Package details here", // Add actual package details
+      paymentMethod: selectedPayment, // Add selected payment method (e.g., "Mover Wallet")
     };
 
     try {
-      const response = await axios.post(
+      const packageResponse = await axios.post(
         `${BaseURL}/package/create`,
         packageData,
         {
@@ -110,17 +113,16 @@ const PackageCarSelection = () => {
           },
         }
       );
-      console.log(response);
 
-      if (response.status === 200 || 201) {
+      if (packageResponse.status === 200) {
         toast.success("Package created successfully!");
         navigate("/package/booked");
       } else {
         toast.error("Failed to create package. Please try again.");
       }
     } catch (error) {
-      toast.error("Failed to create package. Please try again.");
-      console.error("Error creating package:", error);
+      toast.error("Error occurred. Please try again.");
+      console.error("Error:", error);
     }
   };
 
@@ -142,7 +144,11 @@ const PackageCarSelection = () => {
           <PackageCars />
 
           {/* Payment Selector */}
-          <PaymentDropdown onCreatePackage={handleCreatePackage} />
+          <PaymentDropdown
+            onCreatePackage={handleCreatePackage}
+            setSelectedPayment={setSelectedPayment}
+            selectedPayment={selectedPayment}
+          />
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   FiChevronDown,
   FiHome,
@@ -9,53 +10,48 @@ import {
   FiChevronRight,
 } from "react-icons/fi";
 import Header from "../../components/driver-panel/header";
+import { BaseURL } from "../../utils/BaseURL";
 
 export default function Bookings() {
   const [filter, setFilter] = useState("All");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [bookings, setBookings] = useState([]); // Ensure initial state is an array
+  const [loading, setLoading] = useState(true);
+  const formatDate = (date) => {
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    }).format(new Date(date));
+  };
 
-  const bookings = [
-    {
-      id: 1,
-      status: "Active",
-      vehicle: "Honda Civic",
-      vehicleId: "82BG879",
-      customer: "John Doe",
-      dateRange: "Rent from 5:30 AM 05/10/2024 to 5:30PM 05/10/2024",
-      price: 125,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 2,
-      status: "Completed",
-      vehicle: "Honda Civic",
-      vehicleId: "82BG879",
-      customer: "John Doe",
-      dateRange: "Rent from 5:30 AM 05/10/2024 to 5:30PM 05/10/2024",
-      price: 125,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 3,
-      status: "Cancelled",
-      vehicle: "Honda Civic",
-      vehicleId: "82BG879",
-      customer: "John Doe",
-      dateRange: "Rent from 5:30 AM 05/10/2024 to 5:30PM 05/10/2024",
-      price: 125,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 4,
-      status: "Completed",
-      vehicle: "Honda Civic",
-      vehicleId: "82BG879",
-      customer: "John Doe",
-      dateRange: "Rent from 5:30 AM 05/10/2024 to 5:30PM 05/10/2024",
-      price: 125,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-  ];
+  useEffect(() => {
+    const driverData = JSON.parse(localStorage.getItem("userData"));
+    const token = localStorage.getItem("token");
+    const driverId = driverData ? driverData._id : null;
+    console.log("Driver ID:", driverId); // Ensure ID is correctly retrieved
+
+    if (driverId) {
+      axios
+        .get(`${BaseURL}/rent/rented-cars-by-driver/${driverId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
+        })
+        .then((response) => {
+          console.log("Response from API:", response);
+          setBookings(
+            Array.isArray(response.data.rentedCars)
+              ? response.data.rentedCars
+              : []
+          ); // Ensure data is an array
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching rented cars:", error);
+        });
+    }
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -72,7 +68,7 @@ export default function Bookings() {
 
   const getActionButton = (status) => {
     switch (status) {
-      case "Active":
+      case "Inactive":
         return (
           <button
             disabled
@@ -83,12 +79,19 @@ export default function Bookings() {
         );
       default:
         return (
-          <button className="px-6 py-4 bg-[#8257E9] font-bold text-white rounded-full hover:bg-[#7347d5] transition-colors">
-            Delete
+          <button
+            disabled
+            className="px-6 py-4 bg-[#a38ade] font-bold text-white rounded-full cursor-not-allowed transition-colors"
+          >
+            Cancel
           </button>
         );
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -131,26 +134,25 @@ export default function Bookings() {
           </div>
         </div>
 
-        <div className=" grid lg:grid-cols-2 gap-9">
+        <div className="grid lg:grid-cols-2 gap-9">
           {bookings
             .filter((booking) => filter === "All" || booking.status === filter)
             .map((booking) => (
               <div
-                key={booking.id}
-                className="bg-white  border border-gray-300 shadow-md rounded-lg p-6 flex items-center justify-between"
+                key={booking._id}
+                className="bg-white border border-gray-300 shadow-md rounded-lg p-6 flex items-center justify-between"
               >
                 <div className="grid grid-cols-2 items-center gap-6">
-                  <div className="relative h-[250px] w-full flex items-center">
+                  <div className="relative h-[250px] w-[250px] flex items-center">
                     <img
-                      src={"/images/BMW.png"}
-                      alt={booking.vehicle}
-                      className="w-full h-auto  object-cover rounded-lg"
+                      src={booking.image} // dynamic image from the API
+                      alt={booking.vehicleName}
+                      className="w-full h-auto object-contain rounded-lg"
                     />
                     <span
-                      className={`px-3 py-1 absolute top-0
-                          left-0 rounded-full text-sm font-medium ${getStatusColor(
-                            booking.status
-                          )}`}
+                      className={`px-3 py-1 absolute top-0 left-0 rounded-full text-sm font-medium ${getStatusColor(
+                        booking.status
+                      )}`}
                     >
                       {booking.status}
                     </span>
@@ -159,20 +161,22 @@ export default function Bookings() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="font-[600] text-[16px]">
-                        {booking.vehicle}
+                        {booking.make} {booking.model}
                       </h3>
                       <p className="text-lg font-medium">₦{booking.price}</p>
                     </div>
 
                     <p className="text-sm text-gray-500 text-[14px]">
-                      {booking.vehicleId}
+                      {booking.description}
                     </p>
                     <p className="text-[16px] font-medium py-3">
-                      {booking.customer}
+                      {booking.rentalPeriods[0].deliveryLocation}
                     </p>
                     <p className="text-[12px] text-gray-500">
-                      {booking.dateRange}
+                      {formatDate(booking.rentalPeriods[0].startDate)} -{" "}
+                      {formatDate(booking.rentalPeriods[0].endDate)}
                     </p>
+
                     <div className="flex flex-col pt-4 w-3/4 gap-4">
                       {getActionButton(booking.status)}
                     </div>

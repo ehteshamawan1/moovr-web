@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   PieChart,
   Pie,
@@ -8,28 +9,15 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
-} from "recharts";
-import { FaChevronDown } from "react-icons/fa";
-import Header from "../../components/driver-panel/header";
-import { FaStar } from "react-icons/fa";
-import {
   BarChart,
   Bar,
   Tooltip,
   ResponsiveContainer as ResponsiveBarContainer,
 } from "recharts";
-
-const ratingsData = [{ value: 85, color: "#8B5CF6", bgColor: "#F3E8FF" }];
-
-const ratingsTrend = [
-  { day: "Sun", count: 10 },
-  { day: "Mon", count: 20 },
-  { day: "Tue", count: 15 },
-  { day: "Wed", count: 30 },
-  { day: "Thu", count: 25 },
-  { day: "Fri", count: 18 },
-  { day: "Sat", count: 22 },
-];
+import { FaChevronDown } from "react-icons/fa";
+import Header from "../../components/driver-panel/header";
+import { FaStar } from "react-icons/fa";
+import { BaseURL } from "../../utils/BaseURL";
 
 const Card = ({ children, className = "", ...props }) => (
   <div className={`bg-white rounded-lg shadow-sm ${className}`} {...props}>
@@ -41,6 +29,9 @@ export default function Revenue() {
   const [selectedOption, setSelectedOption] = useState("All");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [priceValue, setPriceValue] = useState("");
+  const [reviewsData, setReviewsData] = useState([]); // State to store reviews
+  const [averageRating, setAverageRating] = useState(0); // State for average rating
+  const [ratingTrend, setRatingTrend] = useState([]); // State for rating trend
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -50,6 +41,58 @@ export default function Revenue() {
     setSelectedOption(option);
     setIsDropdownOpen(false);
   };
+
+  // Fetch reviews data dynamically
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const response = await axios.get(`${BaseURL}/reviews`, config);
+        const { reviews, averageRating } = response.data;
+        console.log(reviews, averageRating);
+
+        setReviewsData(reviews); // Set reviews data
+        setAverageRating(averageRating); // Set average rating
+
+        // Calculate rating trend (You can adjust this logic as needed)
+        const trend = calculateRatingTrend(reviews);
+        setRatingTrend(trend);
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      }
+    };
+
+    fetchReviews();
+  }, []);
+
+  // Calculate the rating trend (for the last 7 days)
+  const calculateRatingTrend = (reviews) => {
+    const trend = [
+      { day: "Sun", count: 0 },
+      { day: "Mon", count: 0 },
+      { day: "Tue", count: 0 },
+      { day: "Wed", count: 0 },
+      { day: "Thu", count: 0 },
+      { day: "Fri", count: 0 },
+      { day: "Sat", count: 0 },
+    ];
+
+    reviews.forEach((review) => {
+      const date = new Date(review.createdAt);
+      const dayOfWeek = date.getDay(); // Get the day index (0 - Sunday, 6 - Saturday)
+      trend[dayOfWeek].count += 1; // Increase the count for the respective day
+    });
+
+    return trend;
+  };
+
+  // Calculate the overall percentage
+  const overallPercentage = (averageRating / 5) * 100;
 
   return (
     <div className="w-full min-h-screen">
@@ -106,14 +149,19 @@ export default function Revenue() {
               )}
             </div>
           </div>
+
           <div className="h-[300px]">
             <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
               {/* Overall Ratings */}
               <Card className="border border-gray-200 shadow-lg p-8 flex flex-col justify-center items-center">
                 <h3 className="text-lg font-medium mb-2">Overall Ratings</h3>
                 <img src="/driver/stars.svg" alt="" />
-                <p className="text-3xl font-bold text-gray-700">5.0</p>
-                <p className="text-gray-500">Rated by 45 people</p>
+                <p className="text-3xl font-bold text-gray-700">
+                  {averageRating}
+                </p>
+                <p className="text-gray-500">
+                  Rated by {reviewsData.length} people
+                </p>
               </Card>
 
               {/* Ratings Percentage */}
@@ -127,22 +175,22 @@ export default function Revenue() {
                       <Pie
                         data={[
                           {
-                            value: ratingsData[0].value,
-                            color: ratingsData[0].color,
+                            value: overallPercentage,
+                            color: "#8B5CF6",
                           },
                           {
-                            value: 100 - ratingsData[0].value,
-                            color: ratingsData[0].bgColor,
+                            value: 100 - overallPercentage,
+                            color: "#F3E8FF",
                           },
                         ]}
                         dataKey="value"
-                        innerRadius={50} // Adjusted size
-                        outerRadius={70} // Adjusted size
+                        innerRadius={50}
+                        outerRadius={70}
                         startAngle={90}
                         endAngle={450}
                       >
-                        <Cell key="value" fill={ratingsData[0].color} />
-                        <Cell key="bg" fill={ratingsData[0].bgColor} />
+                        <Cell key="value" fill="#8B5CF6" />
+                        <Cell key="bg" fill="#F3E8FF" />
                       </Pie>
                       <text
                         x="50%"
@@ -151,7 +199,7 @@ export default function Revenue() {
                         dominantBaseline="middle"
                         className="text-xl font-bold"
                       >
-                        {ratingsData[0].value}%
+                        {Math.round(overallPercentage)}%
                       </text>
                     </PieChart>
                   </ResponsiveContainer>
@@ -164,7 +212,7 @@ export default function Revenue() {
                   Ratings Trend
                 </h3>
                 <ResponsiveBarContainer width="100%" height={150}>
-                  <BarChart data={ratingsTrend}>
+                  <BarChart data={ratingTrend}>
                     <XAxis
                       dataKey="day"
                       tick={{ fill: "#4B5563", fontSize: 12 }}
@@ -193,45 +241,7 @@ export default function Revenue() {
             Recent Transactions
           </h3>
           <div className="space-y-4">
-            {[
-              {
-                type: "Payout for a ride",
-                time: "9:54AM",
-                name: "Emeka",
-                review: "Smooth ride, friendly driver! Would recommend.",
-                amount: "-₦10",
-                rating: 5.0,
-                color: "text-red-500",
-              },
-              {
-                type: "Payout for a ride",
-                time: "2:30PM",
-                name: "Emeka",
-                review: "Smooth ride, friendly driver! Would recommend.",
-                amount: "-₦100",
-                rating: 5.0,
-                color: "text-red-500",
-              },
-              {
-                type: "Cash added",
-                time: "05/09/2024",
-                name: "Emeka",
-                review: "Smooth ride, friendly driver! Would recommend.",
-                amount: "+₦50",
-
-                rating: 5.0,
-                color: "text-green-500",
-              },
-              {
-                type: "Payout for a ride",
-                time: "05/09/2024",
-                name: "Emeka",
-                review: "Smooth ride, friendly driver! Would recommend.",
-                amount: "-₦100",
-                rating: 5.0,
-                color: "text-red-500",
-              },
-            ].map((transaction, index) => (
+            {reviewsData.map((review, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-7 bg-gray-50 rounded-lg shadow-md"
@@ -240,18 +250,23 @@ export default function Revenue() {
                   <div className="flex gap-3 items-center">
                     <div>
                       <img
-                        src="/images/avatar.png"
+                        src={
+                          review.reviewer?.profilePicture ||
+                          "/images/avatar.png"
+                        }
                         alt=""
                         className="rounded-full h-12 w-12"
                       />
                     </div>
-                    <p className="text-sm font-medium">{transaction.name}</p>
+                    <p className="text-sm font-medium">
+                      {review.reviewer?.firstName} {review.reviewer?.lastName}
+                    </p>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">{transaction.time}</p>
-                <p className="text-xs text-gray-500">{transaction.review}</p>
-                <span className={`text-md font-semibold `}>
-                  {transaction.rating}.0
+                <p className="text-xs text-gray-500">{review.createdAt}</p>
+                <p className="text-xs text-gray-500">{review.comment}</p>
+                <span className={`text-md font-semibold`}>
+                  {review.rating}.0
                 </span>
               </div>
             ))}

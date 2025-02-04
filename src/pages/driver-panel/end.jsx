@@ -9,21 +9,37 @@ import { BaseURL } from "../../utils/BaseURL";
 
 const End = () => {
   const location = useLocation();
-  const { ride } = location.state;
+  const { ride, activeTab } = location.state;
   const navigate = useNavigate();
 
   const handleCompleteRide = async () => {
     try {
-      const response = await axios.put(
-        `${BaseURL}/rides/status/${ride._id}`,
-        { status: "completed" },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      let response;
+
+      // Determine the API endpoint based on activeTab
+      if (activeTab === "rides") {
+        response = await axios.put(
+          `${BaseURL}/rides/status/${ride._id}`,
+          { status: "completed" },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else if (activeTab === "intercity") {
+        response = await axios.put(
+          `${BaseURL}/intercityrides/status/${ride._id}`,
+          { status: "completed" },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
 
       if (response.status === 200) {
         toast.success("Ride completed successfully!");

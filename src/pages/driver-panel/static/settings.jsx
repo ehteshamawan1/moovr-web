@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BiArrowBack } from "react-icons/bi";
 import Header from "../../../components/driver-panel/header";
 import AccountDetailsModal from "../../../components/user-panel/settings/account-details-modal";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { BaseURL } from "../../../utils/BaseURL";
+import { DotLoader } from "react-spinners"; // Import DotLoader
 
 const DriverSettings = () => {
   const navigate = useNavigate();
@@ -10,11 +13,44 @@ const DriverSettings = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [emailAlertsEnabled, setEmailAlertsEnabled] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [user, setUser] = useState(null); // User state to hold fetched data
+  const [loading, setLoading] = useState(true); // Loading state
 
   const toggleTheme = () => setTheme(theme === "light" ? "dark" : "light");
   const toggleNotifications = () =>
     setNotificationsEnabled(!notificationsEnabled);
   const toggleEmailAlerts = () => setEmailAlertsEnabled(!emailAlertsEnabled);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("token"); // Get token from localStorage
+
+      try {
+        const response = await axios.get(`${BaseURL}/auth/get-user`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token in headers
+          },
+        });
+
+        console.log(response.data.user);
+        setUser(response.data.user); // Set user data from the API
+      } catch (error) {
+        console.error("Error fetching user data", error);
+      } finally {
+        setLoading(false); // Stop loading after data is fetched
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <DotLoader size={60} color="#4F46E5" />
+      </div>
+    ); // Show DotLoader while fetching
+  }
 
   return (
     <div className="text-start text-gray-700">
@@ -33,15 +69,18 @@ const DriverSettings = () => {
             {/* Profile Section */}
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-6 sm:mb-8">
               <img
-                src="/images/avatar.png"
+                src={user?.profilePic || "/images/avatar.png"} // Dynamically display profile picture
                 alt="Profile"
                 className="h-24 w-24 sm:h-[120px] sm:w-[120px] border border-black rounded-full object-cover"
               />
               <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
                 <h2 className="text-lg sm:text-2xl font-semibold">
-                  Mr. Edmund
+                  {user?.firstName || user?.lastName || "Mr. Edmund"}{" "}
+                  {/* Dynamically display name */}
                 </h2>
-                <p className="text-sm text-gray-500">+234xxxxxxxxxx</p>
+                <p className="text-sm text-gray-500">
+                  {user?.phone || "+234xxxxxxxxxx"}
+                </p>
                 <button className="text-primaryPurple text-sm underline mt-2">
                   Change password
                 </button>
@@ -49,38 +88,37 @@ const DriverSettings = () => {
             </div>
 
             {/* Account Details */}
-            <div className="mb-6 sm:mb-8 space-y-3 text-sm sm:text-base">
-              <div className="flex justify-between mb-4 sm:mb-6 items-center">
-                <h3 className="font-semibold">Account details</h3>
+            <div className="mb-8 space-y-3 text-[16px]">
+              <div className="flex justify-between mb-6 items-center">
+                <h3 className="font-[600] ">Account details</h3>
                 <button onClick={() => setIsModalOpen(true)}>
                   <img src="/icons/settings/edit.svg" alt="" />
                 </button>
               </div>
-              {["Name", "Phone", "Email"].map((label, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col sm:flex-row gap-2 sm:gap-5 items-center"
-                >
-                  <p className="w-full sm:w-auto text-gray-700">{label}</p>
-                  <input
-                    type={
-                      label === "Email"
-                        ? "email"
-                        : label === "Phone"
-                        ? "number"
-                        : "text"
-                    }
-                    placeholder={
-                      label === "Name"
-                        ? "Mr. Edmond"
-                        : label === "Phone"
-                        ? "+230 *******"
-                        : "Edmund1235@gmail.com"
-                    }
-                    className="focus:outline-none w-full sm:w-auto"
-                  />
-                </div>
-              ))}
+              <div className="flex gap-5 items-center">
+                <p>Name</p>
+                <input
+                  type="text"
+                  placeholder="Mr. Edmond"
+                  className="focus:outline-none"
+                />
+              </div>
+              <div className="flex gap-5 items-center">
+                <p>Phone</p>
+                <input
+                  type="number"
+                  placeholder="+230 *******"
+                  className="focus:outline-none"
+                />
+              </div>
+              <div className="flex gap-5 items-center">
+                <p>Email</p>
+                <input
+                  type="email"
+                  placeholder="Edmund1235@gmail.com"
+                  className="focus:outline-none"
+                />
+              </div>
             </div>
 
             {/* Language */}

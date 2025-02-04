@@ -1,23 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import Header from "../../components/driver-panel/header";
-
-const totalListings = 55; // Total number of listings
-const listingData = [
-  { name: "Active", value: 45, color: "#8B5CF6", bgColor: "#EDE9FE" },
-  { name: "Inactive", value: 5, color: "#4C1D95", bgColor: "#F3E8FF" },
-  { name: "Removed", value: 5, color: "#EF4444", bgColor: "#FEE2E2" },
-];
-
-// Recent listings data
-const recentListings = [
-  { id: 1, name: "Tesla S", date: "05/09/2024", status: "Active" },
-  { id: 2, name: "Honda Civic", date: "05/09/2024", status: "Inactive" },
-  { id: 3, name: "BMW", date: "05/09/2024", status: "Removed" },
-];
+import axios from "axios";
+import { BaseURL } from "../../utils/BaseURL";
 
 const Card = ({ children, className = "", ...props }) => (
   <div className={`bg-white rounded-lg shadow-sm ${className}`} {...props}>
@@ -28,6 +16,70 @@ const Card = ({ children, className = "", ...props }) => (
 export default function TotalBookings() {
   const [selectedOption, setSelectedOption] = useState("This Month");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [recentListings, setRecentListings] = useState([]);
+  const [totalBookings, setTotalBookings] = useState(0);
+  const [listingData, setListingData] = useState([]);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        const driverId = userData?._id;
+
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+
+        const response = await axios.get(
+          `${BaseURL}/rent/rented-cars-by-driver/${driverId}`, // Adjust API if needed
+          config
+        );
+
+        const rentedCars = response.data.rentedCars || [];
+        setTotalBookings(rentedCars.length);
+
+        const activeListings = rentedCars.filter(
+          (car) => car.status === "active"
+        );
+        const inactiveListings = rentedCars.filter(
+          (car) => car.status === "inactive"
+        );
+        const removedListings = rentedCars.filter(
+          (car) => car.status === "removed"
+        );
+
+        setListingData([
+          {
+            name: "Active",
+            value: activeListings.length,
+            color: "#8B5CF6",
+            bgColor: "#EDE9FE",
+          },
+          {
+            name: "Inactive",
+            value: inactiveListings.length,
+            color: "#4C1D95",
+            bgColor: "#F3E8FF",
+          },
+          {
+            name: "Removed",
+            value: removedListings.length,
+            color: "#EF4444",
+            bgColor: "#FEE2E2",
+          },
+        ]);
+
+        setRecentListings(rentedCars);
+      } catch (error) {
+        console.error("Error fetching bookings data:", error);
+      }
+    };
+
+    fetchBookings();
+  }, []);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -46,7 +98,7 @@ export default function TotalBookings() {
       <div className="p-6 max-w-6xl mx-auto">
         {/* Listing Stats */}
         <Card className="p-6 ">
-          <div className="flex  justify-between items-center">
+          <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Total Bookings</h2>
             <div className="relative">
               <button
@@ -96,7 +148,7 @@ export default function TotalBookings() {
                       data={[
                         { value: data.value, color: data.color },
                         {
-                          value: totalListings - data.value,
+                          value: totalBookings - data.value,
                           color: data.bgColor,
                         },
                       ]}
@@ -135,41 +187,66 @@ export default function TotalBookings() {
           </div>
         </Card>
 
-        {/* Recent Listings */}
         <div className="mt-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Recent Listings
+          </h3>
           <div className="space-y-4">
-            {recentListings.map((listing) => (
-              <div
-                key={listing.id}
-                className="flex shadow-md border rounded-md border-gray-50 items-center justify-between p-4"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-auto h-12">
-                    <img
-                      src="/images/BMW.png"
-                      alt=""
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-medium">{listing.name}</p>
-                    <p className="text-sm text-gray-500">{listing.date}</p>
-                  </div>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    listing.status === "Active"
-                      ? "bg-purple-100 text-purple-600"
-                      : listing.status === "Inactive"
-                      ? "bg-gray-100 text-gray-600"
-                      : "bg-red-100 text-red-600"
-                  }`}
+            {recentListings.length > 0 ? (
+              recentListings.map((listing) => (
+                <div
+                  key={listing._id} // Use the unique car listing _id as key
+                  className="flex shadow-md border rounded-md border-gray-50 items-center justify-between p-4"
                 >
-                  {listing.status}
-                </span>
-              </div>
-            ))}
+                  <div className="flex items-center space-x-4">
+                    <div className="w-auto h-12">
+                      <img
+                        src={listing.image || "/images/BMW.png"} // Default image if none is provided
+                        alt={listing.vehicleName}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-medium">{listing.vehicleName}</p>
+                      <p className="text-sm text-gray-500">{`${listing.make} ${listing.model}`}</p>
+                      <p className="text-sm text-gray-500">
+                        Price: ${listing.price}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Rental Periods */}
+                  <div className="space-y-2">
+                    {listing.rentalPeriods.map((rental, index) => (
+                      <div key={index} className="text-sm text-gray-600">
+                        <p>
+                          Start Date:{" "}
+                          {new Date(rental.startDate).toLocaleDateString()}
+                        </p>
+                        <p>
+                          End Date:{" "}
+                          {new Date(rental.endDate).toLocaleDateString()}
+                        </p>
+                        <p>Delivery Location: {rental.deliveryLocation}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Status Badge */}
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      listing.isAvailable
+                        ? "bg-green-100 text-green-600"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {listing.isAvailable ? "Available" : "Not Available"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p>No recent bookings available.</p>
+            )}
           </div>
         </div>
       </div>

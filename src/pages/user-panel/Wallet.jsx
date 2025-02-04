@@ -1,21 +1,52 @@
-import React, { useState } from "react";
-import {
-  FaArrowLeft,
-  FaEyeSlash,
-  FaGoogle,
-  FaApple,
-  FaEye,
-  FaCcMastercard,
-} from "react-icons/fa"; // Icons for payment methods
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { FaArrowLeft, FaEyeSlash, FaEye } from "react-icons/fa";
 import "../../App.css";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import Header from "../../components/user-panel/header";
+import { BaseURL } from "../../utils/BaseURL";
+import { toast } from "react-hot-toast";
 
 const Wallet = () => {
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState("Google Pay");
   const [amount, setAmount] = useState("");
+  const [balance, setBalance] = useState(null);
+  const [transactions, setTransactions] = useState([]); // State for transactions
+  const [isWithdrawVisible, setIsWithdrawVisible] = useState(false); // Manage withdraw form visibility
+  const [isAddCashVisible, setIsAddCashVisible] = useState(false); // Manage add cash form visibility
+
+  // Fetch wallet balance and transactions on component load
+  useEffect(() => {
+    const fetchBalanceAndTransactions = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        // Fetch balance
+        const balanceResponse = await axios.get(`${BaseURL}/wallet/balance`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setBalance(balanceResponse.data.wallet);
+
+        // Fetch transactions
+        const transactionsResponse = await axios.get(
+          `${BaseURL}/wallet/transactions`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Transactions:", transactionsResponse.data.transactions);
+        setTransactions(transactionsResponse.data.transactions);
+      } catch (error) {
+        console.error("Error fetching balance or transactions:", error);
+      }
+    };
+    fetchBalanceAndTransactions();
+  }, []);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -30,8 +61,62 @@ const Wallet = () => {
     setIsBalanceVisible(!isBalanceVisible);
   };
 
+  // Add money to wallet
+  const addMoney = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${BaseURL}/wallet/add`,
+        { amount },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // Update balance after adding money
+      const response = await axios.get(`${BaseURL}/wallet/balance`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setBalance(response.data.wallet);
+      toast.success(`Added ₦${amount} with ${selectedMethod}`);
+    } catch (error) {
+      console.error("Error adding money:", error);
+      toast.error("Error adding money to wallet");
+    }
+  };
+
+  // Withdraw money from wallet
+  const withdrawMoney = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${BaseURL}/wallet/withdraw`,
+        { amount },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // Update balance after withdrawal
+      const response = await axios.get(`${BaseURL}/wallet/balance`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setBalance(response.data.wallet);
+      toast.success(`Withdrew ₦${amount}`);
+    } catch (error) {
+      console.error("Error withdrawing money:", error);
+      toast.error("Error withdrawing money from wallet");
+    }
+  };
+
   return (
-    <div className="h-screen  w-screen ">
+    <div className="h-screen w-screen">
       {/* Header */}
       <Header />
       <section className="max-w-[1180px] mx-auto p-6 md:p-12">
@@ -41,7 +126,7 @@ const Wallet = () => {
           <span className="text-sm font-medium">Wallet</span>
         </div>
 
-        <div className="flex flex-col md:flex-row items-start md:items-center  mb-8 space-y-6 md:space-y-0 md:space-x-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center mb-8 space-y-6 md:space-y-0 md:space-x-6">
           {/* Wallet Balance Card */}
           <div className="card-gradient p-6 rounded-lg shadow-md w-full max-w-[370px] h-[180px] relative">
             <div className="flex justify-end items-center">
@@ -51,29 +136,46 @@ const Wallet = () => {
                 className="h-8 w-8 rounded-full"
               />
             </div>
-            <div className="flex flex-col justify-end items-start">
-              <h2 className="text-sm font-medium text-gray-500">
-                Available balance
-              </h2>
-              <div className="my-2 flex items-center gap-3">
-                <p className="text-3xl font-semibold text-gray-900">
-                  {isBalanceVisible ? "₦1050" : "₦•••••"}
-                </p>
-                <div
-                  onClick={toggleBalanceVisibility}
-                  className="cursor-pointer"
-                >
-                  {isBalanceVisible ? (
-                    <FaEyeSlash size={25} />
-                  ) : (
-                    <FaEye size={25} />
-                  )}
+            <div className="flex justify-between gap-12 mt-2 items-end w-full ">
+              <div className="flex flex-col justify-end items-start">
+                <h2 className="text-sm font-medium text-gray-500">
+                  Available balance
+                </h2>
+                <div className="my-2 flex items-center gap-3">
+                  <p className="text-3xl font-semibold text-gray-900">
+                    {isBalanceVisible ? `₦${balance}` : "₦•••••"}
+                  </p>
+                  <div
+                    onClick={toggleBalanceVisibility}
+                    className="cursor-pointer"
+                  >
+                    {isBalanceVisible ? (
+                      <FaEyeSlash size={25} />
+                    ) : (
+                      <FaEye size={25} />
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center text-gray-400">
+                  <span className="text-xs">
+                    Tap to {isBalanceVisible ? "hide" : "show"} balance
+                  </span>
                 </div>
               </div>
-              <div className="flex items-center text-gray-400">
-                <span className="text-xs">
-                  Tap to {isBalanceVisible ? "hide" : "show"} balance
-                </span>
+
+              <div className="space-y-3 flex flex-col">
+                <button
+                  onClick={() => setIsAddCashVisible(!isAddCashVisible)}
+                  className="text-[14px] bg-white rounded-full px-6 py-2 text-[#BF88F8] font-semibold"
+                >
+                  Add Cash
+                </button>
+                <button
+                  onClick={() => setIsWithdrawVisible(!isWithdrawVisible)} // Toggle withdraw form visibility
+                  className="text-[14px] bg-[#A75AF2] rounded-full px-6 py-2 text-white font-semibold"
+                >
+                  Withdraw
+                </button>
               </div>
             </div>
           </div>
@@ -106,7 +208,6 @@ const Wallet = () => {
                     alt=""
                     className="h-auto w-6"
                   />
-                  {/* <FaGoogle className="text-xl text-gray-600" /> */}
                   <span className="text-sm">Google Pay</span>
                 </div>
                 <div
@@ -118,8 +219,6 @@ const Wallet = () => {
                     alt=""
                     className="h-auto w-6"
                   />
-
-                  {/* <FaApple className="text-xl text-gray-600" /> */}
                   <span className="text-sm">Apple Pay</span>
                 </div>
                 <div
@@ -131,15 +230,13 @@ const Wallet = () => {
                     alt=""
                     className="h-auto w-6"
                   />
-
-                  {/* <FaCcMastercard className="text-xl text-gray-600" /> */}
                   <span className="text-sm">Mastercard</span>
                 </div>
               </div>
             )}
 
             {/* Input Amount and Add Cash Button */}
-            {!isDropdownOpen && (
+            {!isDropdownOpen && isAddCashVisible && (
               <div className="mt-6 flex items-center gap-2">
                 <input
                   type="number"
@@ -149,12 +246,29 @@ const Wallet = () => {
                   className="bg-gray-200 rounded-full px-4 py-3 w-full text-sm text-gray-700 focus:outline-none"
                 />
                 <button
-                  onClick={() =>
-                    alert(`Added ${amount} with ${selectedMethod}`)
-                  }
+                  onClick={addMoney}
                   className="bg-purple-600 w-[40%] text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-purple-700"
                 >
                   Add cash
+                </button>
+              </div>
+            )}
+
+            {/* Withdraw Form */}
+            {!isDropdownOpen && isWithdrawVisible && (
+              <div className="mt-6 flex items-center gap-2">
+                <input
+                  type="number"
+                  placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="bg-gray-200 rounded-full px-4 py-3 w-full text-sm text-gray-700 focus:outline-none"
+                />
+                <button
+                  onClick={withdrawMoney}
+                  className="bg-red-600 w-[40%] text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-red-700"
+                >
+                  Withdraw
                 </button>
               </div>
             )}
@@ -167,47 +281,36 @@ const Wallet = () => {
             Recent Transactions
           </h3>
           <div className="space-y-4">
-            {[
-              {
-                type: "Payout for a ride",
-                time: "9:54AM",
-                amount: "-₦10",
-                color: "text-red-500",
-              },
-              {
-                type: "Payout for a ride",
-                time: "2:30PM",
-                amount: "-₦100",
-                color: "text-red-500",
-              },
-              {
-                type: "Cash added",
-                time: "05/09/2024",
-                amount: "+₦50",
-                color: "text-green-500",
-              },
-              {
-                type: "Payout for a ride",
-                time: "05/09/2024",
-                amount: "-₦100",
-                color: "text-red-500",
-              },
-            ].map((transaction, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-7 bg-gray-50 rounded-lg shadow-md"
-              >
-                <div className="flex items-center space-x-2">
-                  <div>
-                    <p className="text-sm font-medium">{transaction.type}</p>
+            {transactions.length === 0 ? (
+              <p>No transactions available.</p>
+            ) : (
+              transactions.map((transaction, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-7 bg-gray-50 rounded-lg shadow-md"
+                >
+                  <div className="flex items-center space-x-2">
+                    <div>
+                      <p className="text-sm font-medium">
+                        {transaction.description}
+                      </p>
+                    </div>
                   </div>
+                  <p className="text-xs text-gray-500">{transaction.time}</p>
+                  <span
+                    className={`text-sm font-semibold ${
+                      transaction.type === "debit"
+                        ? "text-red-500"
+                        : "text-green-500"
+                    }`}
+                  >
+                    {transaction.type === "debit"
+                      ? `-₦${Math.abs(transaction.amount)}`
+                      : `+₦${transaction.amount}`}
+                  </span>
                 </div>
-                <p className="text-xs text-gray-500">{transaction.time}</p>
-                <span className={`text-sm font-semibold ${transaction.color}`}>
-                  {transaction.amount}
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>

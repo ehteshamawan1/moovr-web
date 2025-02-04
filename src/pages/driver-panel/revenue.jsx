@@ -1,40 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { FaChevronDown } from "react-icons/fa";
 import Header from "../../components/driver-panel/header";
-// Sample data for the area chart
-const data = [
-  { day: "Sun", value: 30 },
-  { day: "Mon", value: 40 },
-  { day: "Tue", value: 35 },
-  { day: "Wed", value: 45 },
-  { day: "Thu", value: 40 },
-  { day: "Fri", value: 50 },
-  { day: "Sat", value: 35 },
-  { day: "Sun", value: 45 },
-  { day: "Mon", value: 40 },
-  { day: "Tue", value: 55 },
-  { day: "Wed", value: 45 },
-  { day: "Thu", value: 40 },
-  { day: "Fri", value: 30 },
-  { day: "Sat", value: 45 },
-];
+import { DotLoader } from "react-spinners";
+import { BaseURL } from "../../utils/BaseURL";
 
-// Sample data for recent rides
-const recentRides = [
-  { id: 1, date: "01/05/2024", amount: 50 },
-  { id: 2, date: "01/05/2024", amount: 50 },
-  { id: 3, date: "01/05/2024", amount: 50 },
-];
-
+// Button component
 const Button = ({ children, className = "", ...props }) => (
   <button className={`px-4 py-2 rounded-md ${className}`} {...props}>
     {children}
   </button>
 );
 
+// Card component
 const Card = ({ children, className = "", ...props }) => (
   <div className={`bg-white rounded-lg shadow-sm ${className}`} {...props}>
     {children}
@@ -45,6 +25,8 @@ export default function Revenue() {
   const [selectedOption, setSelectedOption] = useState("All");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [priceValue, setPriceValue] = useState("");
+  const [weeklyRevenue, setWeeklyRevenue] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -54,6 +36,61 @@ export default function Revenue() {
     setSelectedOption(option);
     setIsDropdownOpen(false);
   };
+
+  // Fetch revenue data on mount
+  useEffect(() => {
+    const fetchRevenueData = async () => {
+      const token = localStorage.getItem("token"); // Get token from localStorage
+      if (!token) {
+        console.log("Token not found in localStorage");
+        return;
+      }
+
+      try {
+        setLoading(true); // Set loading to true before the API call
+        const response = await fetch(`${BaseURL}/revenue`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`, // Include token in headers
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const data = await response.json();
+        setWeeklyRevenue(data);
+      } catch (error) {
+        console.error("Error fetching revenue data:", error);
+      } finally {
+        setLoading(false); // Set loading to false after the data is fetched
+      }
+    };
+
+    fetchRevenueData();
+  }, []);
+
+  // Check if the data is loaded
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <DotLoader size={60} color="#4B6EEC" />
+      </div>
+    );
+  }
+
+  // Prepare data for the chart
+  const chartData = [
+    { day: "Mon", value: weeklyRevenue.Monday },
+    { day: "Tue", value: weeklyRevenue.Tuesday },
+    { day: "Wed", value: weeklyRevenue.Wednesday },
+    { day: "Thu", value: weeklyRevenue.Thursday },
+    { day: "Fri", value: weeklyRevenue.Friday },
+    { day: "Sat", value: weeklyRevenue.Saturday },
+    { day: "Sun", value: weeklyRevenue.Sunday },
+  ];
 
   return (
     <div className="w-full min-h-screen">
@@ -80,7 +117,7 @@ export default function Revenue() {
               </button>
 
               {/* Dropdown Menu */}
-              {isDropdownOpen && (
+              {/* {isDropdownOpen && (
                 <div className="absolute top-12 right-0 w-56 bg-white shadow-lg rounded-lg mt-1 p-2">
                   <ul className="flex flex-col">
                     <li
@@ -107,13 +144,14 @@ export default function Revenue() {
                     </li>
                   </ul>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
-          <div className=" h-[300px]">
+
+          <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
-                data={data}
+                data={chartData}
                 margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
               >
                 <XAxis
@@ -155,57 +193,35 @@ export default function Revenue() {
             </ResponsiveContainer>
           </div>
         </Card>
-
-        {/* Recent Transactions */}
-        <div>
-          <h3 className="text-lg text-start font-[600] text-gray-800 mt-4 my-4">
-            Recent Transactions
-          </h3>
-          <div className="space-y-4">
-            {[
-              {
-                type: "Payout for a ride",
-                time: "9:54AM",
-                amount: "-₦10",
-                color: "text-red-500",
-              },
-              {
-                type: "Payout for a ride",
-                time: "2:30PM",
-                amount: "-₦100",
-                color: "text-red-500",
-              },
-              {
-                type: "Cash added",
-                time: "05/09/2024",
-                amount: "+₦50",
-                color: "text-green-500",
-              },
-              {
-                type: "Payout for a ride",
-                time: "05/09/2024",
-                amount: "-₦100",
-                color: "text-red-500",
-              },
-            ].map((transaction, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-7 bg-gray-50 rounded-lg shadow-md"
-              >
-                <div className="flex items-center space-x-2">
-                  <div>
-                    <p className="text-sm font-medium">{transaction.type}</p>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500">{transaction.time}</p>
-                <span className={`text-sm font-semibold ${transaction.color}`}>
-                  {transaction.amount}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
 }
+
+{
+  /* <div> */
+}
+// <h3 className="text-lg text-start font-[600] text-gray-800 mt-4 my-4">
+//   Recent Transactions
+// </h3>
+// <div className="space-y-4">
+//   {/* Map recent transactions here, you can dynamically pull these from your API */}
+//   {recentRides.map((transaction, index) => (
+//     <div
+//       key={index}
+//       className="flex items-center justify-between p-7 bg-gray-50 rounded-lg shadow-md"
+//     >
+//       <div className="flex items-center space-x-2">
+//         <div>
+//           <p className="text-sm font-medium">Payout for a ride</p>
+//         </div>
+//       </div>
+//       <p className="text-xs text-gray-500">{transaction.date}</p>
+//       <span className="text-sm font-semibold text-green-500">
+//         +₦{transaction.amount}
+//       </span>
+//     </div>
+//   ))}
+// </div>
+// </div>;
+//   </div>

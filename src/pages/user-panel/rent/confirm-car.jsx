@@ -3,6 +3,9 @@ import { FaMapMarkerAlt } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../../components/user-panel/header";
 import { BaseURL } from "../../../utils/BaseURL";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { DotLoader } from "react-spinners";
 
 const ConfirmCar = () => {
   const { id } = useParams(); // Get the car ID from the URL parameters
@@ -12,35 +15,41 @@ const ConfirmCar = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Retrieve token from localStorage
+  const token = localStorage.getItem("token");
+
   const handleRentCar = async () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${BaseURL}/rent/rent`, {
-        method: "POST",
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Replace with your dynamic token
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const response = await axios.post(
+        `${BaseURL}/rent/rent`,
+        {
           carId: id,
           deliveryLocation,
           rentStartDate,
           rentEndDate,
-        }),
-      });
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Use the token here
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const data = await response.json();
-      if (data.message === "Car rented successfully") {
+      console.log(response.data);
+
+      if (response.data.message === "Car rented successfully") {
+        toast.success("Car rented successfully!");
         // Redirect to a confirmation page or show success message
         navigate("/rent/car/booked");
       } else {
-        alert("Failed to rent the car");
+        toast.error("Failed to rent the car. Please try again.");
       }
     } catch (error) {
       console.error("Error renting car:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -126,7 +135,7 @@ const ConfirmCar = () => {
               className="bg-purple-500 text-white py-3 px-16 rounded-full font-medium hover:bg-purple-600"
               disabled={loading}
             >
-              {loading ? "Processing..." : "Confirm"}
+              {loading ? <DotLoader color="#ffffff" size={30} /> : "Confirm"}
             </button>
           </div>
         </div>

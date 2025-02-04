@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaChevronDown, FaChevronUp, FaBars, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { BaseURL } from "../../utils/BaseURL";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedNav, setSelectedNav] = useState("Ride");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null); // User state to hold fetched data
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -18,6 +21,25 @@ const Header = () => {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("token"); // Get token from localStorage
+      try {
+        const response = await axios.get(`${BaseURL}/auth/get-user`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token in headers
+          },
+        });
+
+        setUser(response.data.user); // Set user data from the API
+      } catch (error) {
+        console.error("Error fetching user data", error);
+      }
+    };
+
+    fetchUserData();
+  }, []); // Empty dependency array means this runs once on component mount
 
   return (
     <header className="flex items-center justify-between px-8 pb-5 pt-8 z-50 shadow-md bg-white">
@@ -73,7 +95,9 @@ const Header = () => {
               className="w-10 h-10 rounded-full"
             />
             <div className="hidden md:flex items-center gap-2 ">
-              <span className="text-gray-700">Mr. Edmund</span>
+              <span className="text-gray-700">
+                {user?.firstName || user?.lastName || "Mr. Edmund"}
+              </span>
               {isOpen ? (
                 <FaChevronUp className="ml-1" />
               ) : (
@@ -100,7 +124,9 @@ const Header = () => {
                   alt="User"
                   className="w-8 h-8 rounded-full"
                 />
-                <span className="text-gray-700">Mr. Edmund</span>
+                <span className="text-gray-700">
+                  {user?.firstName || user?.lastName || "Mr. Edmund"}
+                </span>
               </div>
               <Link to={"/d/activity"}>
                 <img src="/icons/header/pad.svg" alt="" />

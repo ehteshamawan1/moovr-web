@@ -20,8 +20,7 @@ const Reserve = () => {
   const mapInstance = useRef(null);
   const navigate = useNavigate();
 
-  const dummyToken =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODYwN2YzY2E4NGJmODllNmRiZTc1NiIsInBob25lIjoiKzkyMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjgzNzE3NSwiZXhwIjoxNzM4MTMzMTc1fQ.MFPhjtomXz1HMRxX_FA7DpwvxFZ4e24eQLBEj7z0lhI"; // Dummy token for authorization
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const loadGoogleMapsScript = () => {
@@ -134,9 +133,9 @@ const Reserve = () => {
     };
 
     try {
-      const response = await axios.post(`${BaseURL}/rides/create`, rideData, {
+      const response = await axios.post(`${BaseURL}/intercityrides/create`, rideData, {
         headers: {
-          Authorization: dummyToken,
+          Authorization: token,
         },
       });
       alert("Ride created successfully: " + response.data.message);
@@ -181,7 +180,7 @@ const Reserve = () => {
                 <input
                   id="pickup-input"
                   type="text"
-                  placeholder="Enter pickup location"
+                  placeholder="Enter pickup city"
                   className="bg-transparent focus:outline-none w-full"
                 />
               </div>
@@ -190,7 +189,7 @@ const Reserve = () => {
                 <input
                   id="dropoff-input"
                   type="text"
-                  placeholder="Enter dropoff location"
+                  placeholder="Enter dropoff city"
                   className="bg-transparent focus:outline-none w-full"
                 />
               </div>

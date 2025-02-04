@@ -9,25 +9,52 @@ import { BaseURL } from "../../utils/BaseURL";
 
 const Reached = () => {
   const location = useLocation();
-  const { ride } = location.state;
+  const { ride, activeTab } = location.state; // Destructure activeTab
   const navigate = useNavigate();
 
   const handleStartRide = async () => {
     try {
-      const response = await axios.put(
-        `${BaseURL}/rides/status/${ride._id}`,
-        { status: "running" },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      let response;
+
+      // Determine the API endpoint based on activeTab
+      if (activeTab === "rides") {
+        response = await axios.put(
+          `${BaseURL}/rides/status/${ride._id}`,
+          { status: "running" },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else if (activeTab === "intercity") {
+        response = await axios.put(
+          `${BaseURL}/intercityrides/status/${ride._id}`,
+          { status: "running" },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else if (activeTab === "packages") {
+        response = await axios.put(
+          `${BaseURL}/package/status/${ride._id}`,
+          { status: "running" },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
 
       if (response.status === 200) {
         toast.success("Ride started successfully!");
-        navigate("/d/end", { state: { ride } });
+        navigate("/d/end", { state: { ride, activeTab } });
       } else {
         toast.error("Failed to start the ride. Please try again.");
       }

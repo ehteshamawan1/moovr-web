@@ -18,11 +18,11 @@ export default function Listings() {
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const driverId = JSON.parse(localStorage.getItem("user"))?._id;
 
   // Fetch listings from API
   useEffect(() => {
     const fetchListings = async () => {
+      const driverId = JSON.parse(localStorage.getItem("userData"))?._id; // Declare driverId inside useEffect
       if (!driverId) {
         toast.error("Driver ID is missing!");
         return;
@@ -49,7 +49,7 @@ export default function Listings() {
     };
 
     fetchListings();
-  }, [token, driverId]);
+  }, [token]);
 
   const getStatusColor = (status) => {
     switch (status) {
