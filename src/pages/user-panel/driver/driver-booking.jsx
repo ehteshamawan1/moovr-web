@@ -24,16 +24,18 @@ const DriverBooking = () => {
         setError(null);
         setServerMessage("");
 
+        const token = localStorage.getItem("token"); // Get token from localStorage
+
         const response = await fetch(`${BaseURL}/auth/drivers/available`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM", // Replace <your-token> with the actual token
+            Authorization: token ? `Bearer ${token}` : "", // Use token if available
           },
         });
 
         const data = await response.json();
+        console.log("data is here", data.availableDrivers);
 
         if (!response.ok) {
           setError(`Error: ${response.status} ${response.statusText}`);
@@ -92,13 +94,6 @@ const DriverBooking = () => {
           </div>
         </div>
 
-        {/* Show Server Message */}
-        {serverMessage && (
-          <div className="mb-4 p-3 rounded bg-blue-100 text-blue-700">
-            {serverMessage}
-          </div>
-        )}
-
         {/* Show Error Message */}
         {error && (
           <div className="mb-4 p-3 rounded bg-red-100 text-red-700">
@@ -109,7 +104,7 @@ const DriverBooking = () => {
         {/* Display Drivers */}
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 justify-center">
           {drivers.length > 0 ? (
-            drivers.map((driver, index) => (
+            drivers?.map((driver, index) => (
               <DriverCard
                 key={index}
                 id={driver._id}

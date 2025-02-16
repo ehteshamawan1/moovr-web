@@ -89,6 +89,8 @@ import DriverLanguages from "../pages/driver-panel/static/languages.jsx";
 import DriverActivity from "../pages/driver-panel/activity/activity.jsx";
 import Dashboard from "../pages/driver-panel/dashboard.jsx";
 import MultiStepForm from "../pages/registers.jsx";
+import PaymentSuccess from "../pages/user-panel/Wallet-success.jsx";
+import DriverPaymentSuccess from "../pages/driver-panel/Wallet-success.jsx";
 const App = () => {
   const [userData, setUserData] = useState({});
 
@@ -104,6 +106,7 @@ const App = () => {
           <Route path="/verification" element={<Verification />} />
           <Route path="/name" element={<Name />} />
           <Route path="/wallet" element={<Wallet />} />
+          <Route path="/wallet/success" element={<PaymentSuccess />} />
           <Route path="/package" element={<PackageDelivery />} />
           <Route path="/package/pickup" element={<ConfirmPickup />} />
           <Route path="/package/delivery" element={<ConfirmDelivery />} />
@@ -204,6 +207,7 @@ const App = () => {
           <Route path="/d/setup-profile" element={<SetupProfile />} />
           <Route path="/d/setup-license" element={<SetupLicense />} />
           <Route path="/d/wallet" element={<DriverWallet />} />
+          <Route path="/d/wallet/success" element={<DriverPaymentSuccess />} />
           <Route path="/d/package/" element={<PackageGo />} />
           <Route path="/d/package/accept" element={<PackageAccept />} />
           <Route path="/d/package/reached" element={<PackageCompleted />} />

@@ -15,7 +15,7 @@ const CompletedCard = ({ title, path }) => {
       </div>
       <Link to={path}>
         <button className="bg-purple-500 text-white py-3 w-full rounded-full text-lg font-semibold hover:bg-purple-600">
-          Rate your ride
+          Get another Ride
         </button>
       </Link>
     </div>

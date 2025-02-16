@@ -64,7 +64,7 @@ const CarDetail = () => {
           <div className="relative w-[600px]">
             {/* Dynamically fetch the car image */}
             <img
-              src={carDetails.image} // Fallback if imageUrl is not available
+              src={carDetails.image || "/images/BMW.png"} // Fallback if imageUrl is not available
               alt="Car"
               className="w-[85%] h-auto object-contain"
             />

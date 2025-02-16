@@ -8,7 +8,7 @@ import { BaseURL } from "../../../utils/BaseURL";
 import toast from "react-hot-toast";
 
 const PackageCarSelection = () => {
-  const [selectedPayment, setSelectedPayment] = useState("Debit Card");
+  const [selectedPayment, setSelectedPayment] = useState("cash");
   const location = useLocation();
   const navigate = useNavigate();
   const { pickupLocation, deliveryLocation, pickupAddress, deliveryAddress } =
@@ -100,7 +100,7 @@ const PackageCarSelection = () => {
       pickupCoordinates: [pickupLocation.lat, pickupLocation.lng],
       dropoffCoordinates: [deliveryLocation.lat, deliveryLocation.lng],
       packageDetails: "Package details here", // Add actual package details
-      paymentMethod: selectedPayment, // Add selected payment method (e.g., "Mover Wallet")
+      paymentMethod: "cash", // Add selected payment method (e.g., "Mover Wallet")
     };
 
     try {
@@ -114,11 +114,12 @@ const PackageCarSelection = () => {
         }
       );
 
-      if (packageResponse.status === 200) {
+      if (packageResponse.status === 200 || 201) {
         toast.success("Package created successfully!");
         navigate("/package/booked");
       } else {
         toast.error("Failed to create package. Please try again.");
+        console.error("Error what'sss:", packageResponse);
       }
     } catch (error) {
       toast.error("Error occurred. Please try again.");

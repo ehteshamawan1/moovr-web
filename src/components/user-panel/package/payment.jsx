@@ -25,7 +25,7 @@ const PaymentDropdown = ({
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 w-80 flex flex-col items-center gap-3 relative">
       {/* Dropdown */}
-      {isDropdownOpen && (
+      {/* {isDropdownOpen && (
         <div className="bg-white w-full rounded-lg shadow-lg mb-2 absolute bottom-[120px]">
           <ul className="flex flex-col">
             <li
@@ -63,10 +63,10 @@ const PaymentDropdown = ({
             </li>
           </ul>
         </div>
-      )}
+      )} */}
 
       {/* Payment Selector */}
-      <div
+      {/* <div
         className="flex items-center space-x-3 cursor-pointer"
         onClick={toggleDropdown}
       >
@@ -93,7 +93,7 @@ const PaymentDropdown = ({
             isDropdownOpen ? "rotate-180" : "rotate-0"
           }`}
         />
-      </div>
+      </div> */}
 
       {/* Action Button */}
       <div className="w-full ">
