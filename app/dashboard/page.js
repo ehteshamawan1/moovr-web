@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Card, CardBody } from "@nextui-org/card";
 import {
   Table,
@@ -25,6 +27,7 @@ import {
 } from "recharts";
 import { Avatar } from "@nextui-org/avatar";
 
+// Static data for dashboard elements (stats, charts, recent users, etc.)
 const stats = [
   {
     title: "Total Passengers",
@@ -71,25 +74,6 @@ const bookingData = [
   { month: "DEC", amount: 400 },
 ];
 
-const recentBookings = [
-  {
-    orderId: "#8cd0ec27",
-    customerName: "pankaj",
-    bookingDate: "05 February 2025 11:06 AM",
-    paymentStatus: "Unpaid",
-    bookingStatus: "Cancelled",
-    total: "$ 3.42",
-  },
-  {
-    orderId: "#9787b95e",
-    customerName: "pankaj",
-    bookingDate: "05 February 2025 10:59 AM",
-    paymentStatus: "Unpaid",
-    bookingStatus: "OnGoing",
-    total: "$ 2614.46",
-  },
-];
-
 const recentUsers = [
   {
     name: "pankaj",
@@ -114,6 +98,35 @@ const userData = [
 ];
 
 export default function DashboardPage() {
+  // Hard-code the user type. Change to "driver" if needed.
+  const userType = "user";
+
+  // State to store past bookings fetched from the API
+  const [bookings, setBookings] = useState([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [bookingsError, setBookingsError] = useState(null);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        // Choose the appropriate endpoint based on the user type.
+        const endpoint =
+          userType === "driver"
+            ? "https://moovr-api.vercel.app/past-driver-bookings"
+            : "https://moovr-api.vercel.app/api/v1/past-user-bookings";
+        const response = await axios.get(endpoint);
+        // Assuming the API returns an object with a "bookings" key.
+        setBookings(response.data.bookings);
+      } catch (error) {
+        setBookingsError("Failed to fetch past bookings");
+      } finally {
+        setBookingsLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, [userType]);
+
   return (
     <div className="p-6 space-y-6 bg-gray-50/50">
       {/* Stats Cards */}
@@ -188,11 +201,7 @@ export default function DashboardPage() {
                     endAngle={-270}
                   >
                     {userData.map((entry) => (
-                      <Cell
-                        key={entry.name}
-                        fill={entry.color}
-                        strokeWidth={0}
-                      />
+                      <Cell key={entry.name} fill={entry.color} strokeWidth={0} />
                     ))}
                   </Pie>
                   <Legend
@@ -216,42 +225,54 @@ export default function DashboardPage() {
           <CardBody>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold">Recent Bookings</h3>
-              <button className="text-blue-500 hover:underline">
-                View all
-              </button>
+              <button className="text-blue-500 hover:underline">View all</button>
             </div>
-            <Table aria-label="Recent bookings">
-              <TableHeader>
-                <TableColumn className="bg-gray-50">Order Id</TableColumn>
-                <TableColumn className="bg-gray-50">Customer Name</TableColumn>
-                <TableColumn className="bg-gray-50">Booking Date</TableColumn>
-                <TableColumn className="bg-gray-50">Payment Status</TableColumn>
-                <TableColumn className="bg-gray-50">Booking Status</TableColumn>
-                <TableColumn className="bg-gray-50">Total</TableColumn>
-              </TableHeader>
-              <TableBody>
-                {recentBookings.map((booking) => (
-                  <TableRow key={booking.orderId}>
-                    <TableCell>{booking.orderId}</TableCell>
-                    <TableCell>{booking.customerName}</TableCell>
-                    <TableCell>{booking.bookingDate}</TableCell>
-                    <TableCell>{booking.paymentStatus}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`px-2 py-1 rounded-full text-sm ${
-                          booking.bookingStatus === "Cancelled"
-                            ? "bg-red-100 text-red-600"
-                            : "bg-yellow-100 text-yellow-600"
-                        }`}
-                      >
-                        {booking.bookingStatus}
-                      </span>
-                    </TableCell>
-                    <TableCell>{booking.total}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            {bookingsLoading ? (
+              <p>Loading bookings...</p>
+            ) : bookingsError ? (
+              <p className="text-red-500">{bookingsError}</p>
+            ) : (
+              <Table aria-label="Recent bookings">
+                <TableHeader>
+                  <TableColumn className="bg-gray-50">Order Id</TableColumn>
+                  <TableColumn className="bg-gray-50">
+                    Customer Name
+                  </TableColumn>
+                  <TableColumn className="bg-gray-50">
+                    Booking Date
+                  </TableColumn>
+                  <TableColumn className="bg-gray-50">
+                    Payment Status
+                  </TableColumn>
+                  <TableColumn className="bg-gray-50">
+                    Booking Status
+                  </TableColumn>
+                  <TableColumn className="bg-gray-50">Total</TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {bookings.map((booking) => (
+                    <TableRow key={booking.orderId}>
+                      <TableCell>{booking.orderId}</TableCell>
+                      <TableCell>{booking.customerName}</TableCell>
+                      <TableCell>{booking.bookingDate}</TableCell>
+                      <TableCell>{booking.paymentStatus}</TableCell>
+                      <TableCell>
+                        <span
+                          className={`px-2 py-1 rounded-full text-sm ${
+                            booking.bookingStatus === "Cancelled"
+                              ? "bg-red-100 text-red-600"
+                              : "bg-yellow-100 text-yellow-600"
+                          }`}
+                        >
+                          {booking.bookingStatus}
+                        </span>
+                      </TableCell>
+                      <TableCell>{booking.total}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardBody>
         </Card>
 
@@ -260,9 +281,7 @@ export default function DashboardPage() {
           <CardBody>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold">Recent Users</h3>
-              <button className="text-blue-500 hover:underline">
-                View all
-              </button>
+              <button className="text-blue-500 hover:underline">View all</button>
             </div>
             <div className="space-y-4">
               {recentUsers.map((user, index) => (

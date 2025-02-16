@@ -19,51 +19,66 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Eye, Pencil, Trash, Search } from "lucide-react";
 
 export default function DriversPage() {
-  const [drivers, setDrivers] = useState([]);
+  // In this example the API returns booking objects:
+  // {
+  //   "driver": "driver_id_here",
+  //   "location": "123 Main St",
+  //   "carName": "Toyota Camry",
+  //   "carNumber": "ABC123",
+  //   "startTime": 8,
+  //   "endTime": 12,
+  //   "totalPrice": 200,
+  //   "paymentMethod": "credit_card",
+  //   "status": "pending"
+  // }
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch booking data from the live API endpoint
   useEffect(() => {
-    const fetchDrivers = async () => {
+    const fetchBookings = async () => {
       try {
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace with actual token management
-        const response = await axios.get("/api/v1/auth/drivers/all", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setDrivers(response.data.drivers);
+        const response = await axios.get(
+          "https://moovr-api.vercel.app/api/v1/bookings/user-bookings"
+        );
+        // Assuming the API returns an object with a "bookings" array:
+        setBookings(response.data.bookings || []);
       } catch (err) {
-        setError("Failed to fetch drivers");
+        console.error("Error fetching bookings:", err);
+        setError("Failed to fetch bookings");
       } finally {
         setLoading(false);
       }
     };
-    fetchDrivers();
+
+    fetchBookings();
   }, []);
 
-  if (loading) return <p>Loading drivers...</p>;
+  if (loading) return <p>Loading bookings...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div className="p-6 space-y-6 bg-gray-50/50">
+      {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Drivers</h1>
+        <h1 className="text-2xl font-semibold">User Bookings</h1>
       </div>
 
+      {/* Filter and Search */}
       <div className="flex gap-3 justify-end">
         <Select>
           <SelectTrigger className="w-32">
-            <SelectValue placeholder="Name" />
+            <SelectValue placeholder="Filter" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="name">Name</SelectItem>
-            <SelectItem value="phone">Phone</SelectItem>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
           </SelectContent>
         </Select>
 
@@ -73,36 +88,49 @@ export default function DriversPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm">
+      {/* Bookings Table */}
+      <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>PROFILE IMAGE</TableHead>
-              <TableHead>FULL NAME</TableHead>
-              <TableHead>PHONE</TableHead>
-              <TableHead>CITY</TableHead>
-              <TableHead>SERVICE TYPE</TableHead>
+              <TableHead>DRIVER</TableHead>
+              <TableHead>LOCATION</TableHead>
+              <TableHead>CAR NAME</TableHead>
+              <TableHead>CAR NUMBER</TableHead>
+              <TableHead>TIME</TableHead>
+              <TableHead>TOTAL PRICE</TableHead>
+              <TableHead>PAYMENT METHOD</TableHead>
               <TableHead>STATUS</TableHead>
               <TableHead>ACTION</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {drivers.map((driver, index) => (
+            {bookings.map((booking, index) => (
               <TableRow key={index}>
+                <TableCell>{booking.driver}</TableCell>
+                <TableCell>{booking.location}</TableCell>
+                <TableCell>{booking.carName}</TableCell>
+                <TableCell>{booking.carNumber}</TableCell>
                 <TableCell>
-                  <Avatar>
-                    <AvatarImage src="/placeholder.svg" alt={driver.firstName} />
-                    <AvatarFallback>{driver.firstName[0]}</AvatarFallback>
-                  </Avatar>
+                  {booking.startTime} - {booking.endTime}
                 </TableCell>
+                <TableCell>${booking.totalPrice}</TableCell>
+                <TableCell>{booking.paymentMethod}</TableCell>
                 <TableCell>
-                  <p className="font-medium">{driver.firstName} {driver.lastName}</p>
-                </TableCell>
-                <TableCell>{driver.phone}</TableCell>
-                <TableCell>{driver.city}</TableCell>
-                <TableCell>{driver.serviceType}</TableCell>
-                <TableCell>
-                  <Switch checked={true} className="data-[state=checked]:bg-orange-500" />
+                  <span
+                    className={`px-2 py-1 rounded-full text-sm ${
+                      booking.status === "pending"
+                        ? "bg-yellow-100 text-yellow-600"
+                        : booking.status === "completed"
+                        ? "bg-green-100 text-green-600"
+                        : booking.status === "cancelled"
+                        ? "bg-red-100 text-red-600"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {booking.status.charAt(0).toUpperCase() +
+                      booking.status.slice(1)}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">

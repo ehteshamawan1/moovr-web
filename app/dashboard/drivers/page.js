@@ -32,7 +32,7 @@ export default function DriversPage() {
     const fetchDrivers = async () => {
       try {
         const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace with actual token management
-        const response = await axios.get("/api/v1/auth/drivers/available", {
+        const response = await axios.get("https://moovr-api.vercel.app/api/v1/auth/drivers/available", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
