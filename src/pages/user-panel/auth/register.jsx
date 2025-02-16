@@ -5,11 +5,14 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { BaseURL } from "../../../utils/BaseURL";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import FacebookLogin from "react-facebook-login";
 
 const Register = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const navigate = useNavigate();
 
+  // Handle phone number changes and submission
   const handlePhoneNumberChange = (value) => {
     setPhoneNumber(value);
   };
@@ -29,26 +32,47 @@ const Register = () => {
 
       if (response.status === 200) {
         toast.success("OTP requested successfully!");
-
-        let userData = {
-          phone: phoneNumber,
-        };
-
-        localStorage.setItem("userData", JSON.stringify(userData));
+        localStorage.setItem("userData", JSON.stringify({ phone: phoneNumber }));
         navigate("/verification");
       } else {
-        // Handle unexpected success response
         toast.error("Unexpected response. Please try again.");
       }
     } catch (error) {
-      // Display error message from backend if available
       const errorMessage =
         error.response && error.response.data && error.response.data.message
           ? error.response.data.message
           : "Error requesting OTP. Please try again.";
-
       toast.error(errorMessage);
       console.error("Error requesting OTP:", error);
+    }
+  };
+
+  // Handle Google sign-in success
+  const handleGoogleSuccess = (credentialResponse) => {
+    console.log("Google Credential Response:", credentialResponse);
+    toast.success("Google sign-in successful!");
+    localStorage.setItem(
+      "userData",
+      JSON.stringify({ token: credentialResponse.credential })
+    );
+    navigate("/verification");
+  };
+
+  // Handle Google sign-in failure
+  const handleGoogleError = () => {
+    toast.error("Google sign-in failed. Please try again.");
+  };
+
+  // Handle Facebook login response
+  const handleFacebookResponse = (response) => {
+    console.log("Facebook Response:", response);
+    // If login was successful, response will include an accessToken and userID.
+    if (response.accessToken) {
+      toast.success("Facebook login successful!");
+      localStorage.setItem("userData", JSON.stringify(response));
+      navigate("/verification");
+    } else {
+      toast.error("Facebook login failed. Please try again.");
     }
   };
 
@@ -93,10 +117,25 @@ const Register = () => {
             <hr className="flex-1" />
           </div>
           <div className="space-y-3">
-            <button className="w-full py-2 border border-gray-300 rounded-full flex items-center justify-center space-x-2 hover:bg-gray-100">
-              <img src="/icons/google.svg" alt="Google" className="w-5 h-5" />
-              <span>Continue with Google</span>
-            </button>
+            {/* Google Sign-In Button */}
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              useOneTap={false}
+            />
+
+            {/* Facebook Login Button */}
+            <FacebookLogin
+              appId="10058219200861806"
+              autoLoad={false}
+              fields="name,email,picture"
+              callback={handleFacebookResponse}
+              cssClass="w-full py-2 border border-gray-300 rounded-full flex items-center justify-center space-x-2 hover:bg-gray-100"
+              icon="fa-facebook"
+              textButton="Continue with Facebook"
+            />
+
+            {/* Apple Login Placeholder */}
             <button className="w-full py-2 border border-gray-300 rounded-full flex items-center justify-center space-x-2 hover:bg-gray-100">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/633px-Apple_logo_black.svg.png"
@@ -104,14 +143,6 @@ const Register = () => {
                 className="w-5 h-5"
               />
               <span>Continue with Apple</span>
-            </button>
-            <button className="w-full py-2 border border-gray-300 rounded-full flex items-center justify-center space-x-2 hover:bg-gray-100">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"
-                alt="Facebook"
-                className="w-5 h-5"
-              />
-              <span>Continue with Facebook</span>
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-4">
@@ -125,4 +156,13 @@ const Register = () => {
   );
 };
 
-export default Register;
+// Wrap the Register component with the GoogleOAuthProvider to initialize the Google OAuth library.
+const RegisterWithGoogle = () => {
+  return (
+    <GoogleOAuthProvider clientId="AIzaSyAxrweU7V8o6GsAENP-zXUPpBalFrfztS0">
+      <Register />
+    </GoogleOAuthProvider>
+  );
+};
+
+export default RegisterWithGoogle;
