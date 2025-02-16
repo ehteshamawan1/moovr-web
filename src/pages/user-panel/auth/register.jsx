@@ -117,14 +117,12 @@ const Register = () => {
             <hr className="flex-1" />
           </div>
           <div className="space-y-3">
-            {/* Google Sign-In Button */}
-            <GoogleLogin
+            {/* <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleError}
               useOneTap={false}
             />
 
-            {/* Facebook Login Button */}
             <FacebookLogin
               appId="10058219200861806"
               autoLoad={false}
@@ -135,7 +133,6 @@ const Register = () => {
               textButton="Continue with Facebook"
             />
 
-            {/* Apple Login Placeholder */}
             <button className="w-full py-2 border border-gray-300 rounded-full flex items-center justify-center space-x-2 hover:bg-gray-100">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/633px-Apple_logo_black.svg.png"
@@ -143,7 +140,7 @@ const Register = () => {
                 className="w-5 h-5"
               />
               <span>Continue with Apple</span>
-            </button>
+            </button> */}
           </div>
           <p className="text-xs text-gray-500 mt-4">
             By proceeding, you consent to get calls, WhatsApp or SMS messages,
