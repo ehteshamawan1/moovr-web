@@ -1,39 +1,40 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../../../components/user-panel/header";
 import { BiArrowBack } from "react-icons/bi";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { BaseURL } from "../../../utils/BaseURL";
+import toast from "react-hot-toast";
 
 const DriverConfirmation = () => {
-  const { driverId } = useParams(); // Extract driverId from URL params
+  const { driverId } = useParams();
   const navigate = useNavigate();
 
-  // Static userId
-  const userId = "abcdg";
+  const now = new Date();
+  const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
 
-  // State to manage form data
   const [formData, setFormData] = useState({
-    driver: driverId,
+    driverId,
     location: "",
     carName: "",
     carNumber: "",
-    startTime: new Date().toISOString().slice(0, 16), // Default start time
-    endTime: new Date().toISOString().slice(0, 16), // Default end time
-    paymentMethod: "credit_card", // Default payment method
+    startTime: now.toISOString().slice(0, 16),
+    endTime: oneHourLater.toISOString().slice(0, 16),
+    paymentMethod: "cash",
   });
 
-  // State for loading and error
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Handle input changes
+  useEffect(() => {
+    setFormData((prevData) => ({ ...prevData, driverId }));
+  }, [driverId]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  // Validate form data
   const validateForm = () => {
     const { location, carName, carNumber, startTime, endTime } = formData;
     if (!location || !carName || !carNumber || !startTime || !endTime) {
@@ -43,36 +44,25 @@ const DriverConfirmation = () => {
     return true;
   };
 
-  // Handle form submission
   const handleConfirm = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      return;
+    }
 
     setLoading(true);
     setError("");
 
     try {
-      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace with a token from a secure source (e.g., localStorage)
-      if (!token) throw new Error("Authentication token is missing. Please log in again.");
+      // Instead of actual API call, use dummy data and simulate success
+      setTimeout(() => {
+        // Show success toast/alert
+        toast.success("Driver booked successfully! ");
 
-      const response = await axios.post(
-        `${BaseURL}/bookings/book`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.data.message === "Driver booked successfully") {
-        alert("Driver booked successfully!");
-        navigate("/driver/start");
-      }
+        // Navigate to the ride page
+        navigate("/ride");
+      }, 1000); // Simulate network delay of 1 second
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message || "An unexpected error occurred.";
-      setError(errorMessage);
+      setError("An error occurred in the dummy booking process.");
     } finally {
       setLoading(false);
     }
@@ -156,7 +146,7 @@ const DriverConfirmation = () => {
           </div>
 
           {/* Payment Section */}
-          <div className="bg-white rounded-2xl shadow-md p-4">
+          {/* <div className="bg-white rounded-2xl shadow-md p-4">
             <h3 className="text-gray-800 font-semibold mb-2">Payment</h3>
             <div className="space-y-2">
               <label className="text-gray-600">Payment Method</label>
@@ -171,7 +161,7 @@ const DriverConfirmation = () => {
                 <option value="mobile_payment">Mobile Payment</option>
               </select>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Price and Confirm Section */}

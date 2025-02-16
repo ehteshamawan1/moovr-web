@@ -39,6 +39,17 @@ const End = () => {
             },
           }
         );
+      } else if (activeTab === "packages") {
+        response = await axios.put(
+          `${BaseURL}/package/status/${ride._id}`,
+          { status: "completed" },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
       }
 
       if (response.status === 200) {

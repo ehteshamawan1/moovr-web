@@ -33,7 +33,7 @@ const Accept = () => {
                 Authorization: `Bearer ${token}`,
               },
             }),
-            axios.get(`${BaseURL}/intercityrides/get/available`, {
+            axios.get(`${BaseURL}/intercityRides/get/available`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },

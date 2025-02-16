@@ -6,6 +6,7 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import Header from "../../components/user-panel/header";
 import { BaseURL } from "../../utils/BaseURL";
 import { toast } from "react-hot-toast";
+import { loadStripe } from "@stripe/stripe-js";
 
 const Wallet = () => {
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
@@ -17,17 +18,26 @@ const Wallet = () => {
   const [isWithdrawVisible, setIsWithdrawVisible] = useState(false); // Manage withdraw form visibility
   const [isAddCashVisible, setIsAddCashVisible] = useState(false); // Manage add cash form visibility
 
+  // Initialize Stripe
+  const stripePromise = loadStripe(
+    "pk_test_51Qh7pjPQrssbKnUgC5oCt75S821aZMLoqsfL92VMYo5qElNk5HBzv4QWU0TWQkRWb0UpvJohUkNzTGAE0gmzIizB00BLXMxG5h"
+  ); // Replace with your Stripe publishable key
+
   // Fetch wallet balance and transactions on component load
   useEffect(() => {
     const fetchBalanceAndTransactions = async () => {
       try {
         const token = localStorage.getItem("token");
+        console.log(token);
         // Fetch balance
         const balanceResponse = await axios.get(`${BaseURL}/wallet/balance`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+
+        console.log(balanceResponse);
+
         setBalance(balanceResponse.data.wallet);
 
         // Fetch transactions
@@ -61,30 +71,41 @@ const Wallet = () => {
     setIsBalanceVisible(!isBalanceVisible);
   };
 
-  // Add money to wallet
   const addMoney = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
-        `${BaseURL}/wallet/add`,
-        { amount },
+      const userData = JSON.parse(localStorage.getItem("userData")); // Parse userData from localStorage
+      const userId = userData?._id; // Get _id from userData
+
+      if (!userId) {
+        toast.error("User not found. Please log in again.");
+        return;
+      }
+
+      // First, create a payment intent on the backend
+      const response = await axios.post(
+        `${BaseURL}/wallet/create-payment-intent`,
+        { amount, userId }, // Send userId in the request body
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      // Update balance after adding money
-      const response = await axios.get(`${BaseURL}/wallet/balance`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+
+      const stripe = await stripePromise;
+
+      // Redirect to Stripe Checkout
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: response.data.sessionId,
       });
-      setBalance(response.data.wallet);
-      toast.success(`Added ₦${amount} with ${selectedMethod}`);
+
+      if (error) {
+        toast.error(error.message);
+      }
     } catch (error) {
-      console.error("Error adding money:", error);
-      toast.error("Error adding money to wallet");
+      console.error("Error initiating payment:", error);
+      toast.error("Error processing payment");
     }
   };
 

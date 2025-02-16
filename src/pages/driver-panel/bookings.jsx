@@ -1,54 +1,44 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  FiChevronDown,
-  FiHome,
-  FiGrid,
-  FiCreditCard,
-  FiList,
-  FiCalendar,
-  FiChevronRight,
-} from "react-icons/fi";
+import { FiChevronDown } from "react-icons/fi";
 import Header from "../../components/driver-panel/header";
 import { BaseURL } from "../../utils/BaseURL";
 
 export default function Bookings() {
   const [filter, setFilter] = useState("All");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [bookings, setBookings] = useState([]); // Ensure initial state is an array
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const formatDate = (date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-    }).format(new Date(date));
+
+  const formatTime = (date) => {
+    const utcHours = new Date(date).getUTCHours();
+    const utcMinutes = new Date(date).getUTCMinutes();
+    const hours = utcHours % 12 || 12;
+    const minutes = utcMinutes.toString().padStart(2, "0");
+    const ampm = utcHours >= 12 ? "PM" : "AM";
+    return `${hours}:${minutes} ${ampm}`;
   };
 
   useEffect(() => {
     const driverData = JSON.parse(localStorage.getItem("userData"));
     const token = localStorage.getItem("token");
     const driverId = driverData ? driverData._id : null;
-    console.log("Driver ID:", driverId); // Ensure ID is correctly retrieved
 
     if (driverId) {
       axios
-        .get(`${BaseURL}/rent/rented-cars-by-driver/${driverId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
-          },
+        .get(`${BaseURL}/bookings/driver-bookings`, {
+          headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
-          console.log("Response from API:", response);
+          console.log("Response from API:", response.data);
           setBookings(
-            Array.isArray(response.data.rentedCars)
-              ? response.data.rentedCars
-              : []
-          ); // Ensure data is an array
+            Array.isArray(response.data.bookings) ? response.data.bookings : []
+          );
           setLoading(false);
         })
         .catch((error) => {
-          console.error("Error fetching rented cars:", error);
+          console.error("Error fetching bookings:", error);
+          setLoading(false);
         });
     }
   }, []);
@@ -67,26 +57,18 @@ export default function Bookings() {
   };
 
   const getActionButton = (status) => {
-    switch (status) {
-      case "Inactive":
-        return (
-          <button
-            disabled
-            className="px-6 py-4 bg-[#F3E9FE] cursor-not-allowed text-primaryPurple font-bold rounded-full transition-colors"
-          >
-            Cancel
-          </button>
-        );
-      default:
-        return (
-          <button
-            disabled
-            className="px-6 py-4 bg-[#a38ade] font-bold text-white rounded-full cursor-not-allowed transition-colors"
-          >
-            Cancel
-          </button>
-        );
-    }
+    return (
+      <button
+        disabled
+        className={`px-6 py-4 ${
+          status === "Inactive"
+            ? "bg-[#F3E9FE] text-primaryPurple"
+            : "bg-[#a38ade] text-white"
+        } font-bold rounded-full cursor-not-allowed transition-colors`}
+      >
+        Cancel
+      </button>
+    );
   };
 
   if (loading) {
@@ -95,7 +77,6 @@ export default function Bookings() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
       <Header />
 
       <main className="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -145,8 +126,8 @@ export default function Bookings() {
                 <div className="grid grid-cols-2 items-center gap-6">
                   <div className="relative h-[250px] w-[250px] flex items-center">
                     <img
-                      src={booking.image} // dynamic image from the API
-                      alt={booking.vehicleName}
+                      src={booking.image || "/images/BMW.png"}
+                      alt={booking.carName}
                       className="w-full h-auto object-contain rounded-lg"
                     />
                     <span
@@ -161,20 +142,18 @@ export default function Bookings() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="font-[600] text-[16px]">
-                        {booking.make} {booking.model}
+                        {booking.carName}
                       </h3>
-                      <p className="text-lg font-medium">₦{booking.price}</p>
                     </div>
 
                     <p className="text-sm text-gray-500 text-[14px]">
-                      {booking.description}
-                    </p>
-                    <p className="text-[16px] font-medium py-3">
-                      {booking.rentalPeriods[0].deliveryLocation}
+                      {booking.location || "No location specified"}
                     </p>
                     <p className="text-[12px] text-gray-500">
-                      {formatDate(booking.rentalPeriods[0].startDate)} -{" "}
-                      {formatDate(booking.rentalPeriods[0].endDate)}
+                      {booking.startTime
+                        ? formatTime(booking.startTime)
+                        : "N/A"}{" "}
+                      -{booking.endTime ? formatTime(booking.endTime) : "N/A"}
                     </p>
 
                     <div className="flex flex-col pt-4 w-3/4 gap-4">

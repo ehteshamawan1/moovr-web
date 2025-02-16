@@ -34,41 +34,25 @@ export default function TotalBookings() {
         };
 
         const response = await axios.get(
-          `${BaseURL}/rent/rented-cars-by-driver/${driverId}`, // Adjust API if needed
+          `${BaseURL}/bookings/driver-bookings`,
           config
         );
 
-        const rentedCars = response.data.rentedCars || [];
+        console.log(response.data);
+
+        const rentedCars = response.data.bookings || [];
         setTotalBookings(rentedCars.length);
 
-        const activeListings = rentedCars.filter(
-          (car) => car.status === "active"
-        );
-        const inactiveListings = rentedCars.filter(
-          (car) => car.status === "inactive"
-        );
-        const removedListings = rentedCars.filter(
-          (car) => car.status === "removed"
+        const pendingListings = rentedCars.filter(
+          (car) => car.status === "pending"
         );
 
         setListingData([
           {
-            name: "Active",
-            value: activeListings.length,
-            color: "#8B5CF6",
-            bgColor: "#EDE9FE",
-          },
-          {
-            name: "Inactive",
-            value: inactiveListings.length,
+            name: "Pending",
+            value: pendingListings.length,
             color: "#4C1D95",
-            bgColor: "#F3E8FF",
-          },
-          {
-            name: "Removed",
-            value: removedListings.length,
-            color: "#EF4444",
-            bgColor: "#FEE2E2",
+            bgColor: "#8257E9",
           },
         ]);
 
@@ -92,12 +76,10 @@ export default function TotalBookings() {
 
   return (
     <div className="w-full min-h-screen">
-      {/* Header */}
       <Header />
 
       <div className="p-6 max-w-6xl mx-auto">
-        {/* Listing Stats */}
-        <Card className="p-6 ">
+        <Card className="p-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Total Bookings</h2>
             <div className="relative">
@@ -195,52 +177,46 @@ export default function TotalBookings() {
             {recentListings.length > 0 ? (
               recentListings.map((listing) => (
                 <div
-                  key={listing._id} // Use the unique car listing _id as key
+                  key={listing._id}
                   className="flex shadow-md border rounded-md border-gray-50 items-center justify-between p-4"
                 >
                   <div className="flex items-center space-x-4">
                     <div className="w-auto h-12">
                       <img
-                        src={listing.image || "/images/BMW.png"} // Default image if none is provided
-                        alt={listing.vehicleName}
+                        src={listing.image || "/images/BMW.png"}
+                        alt={listing.carName}
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <div>
-                      <p className="font-medium">{listing.vehicleName}</p>
-                      <p className="text-sm text-gray-500">{`${listing.make} ${listing.model}`}</p>
+                      <p className="font-medium">{listing.carName}</p>
                       <p className="text-sm text-gray-500">
-                        Price: ${listing.price}
+                        Car Number: {listing.carNumber}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Location: {listing.location}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Price: ${listing.totalPrice}
                       </p>
                     </div>
                   </div>
 
-                  {/* Rental Periods */}
                   <div className="space-y-2">
-                    {listing.rentalPeriods.map((rental, index) => (
-                      <div key={index} className="text-sm text-gray-600">
-                        <p>
-                          Start Date:{" "}
-                          {new Date(rental.startDate).toLocaleDateString()}
-                        </p>
-                        <p>
-                          End Date:{" "}
-                          {new Date(rental.endDate).toLocaleDateString()}
-                        </p>
-                        <p>Delivery Location: {rental.deliveryLocation}</p>
-                      </div>
-                    ))}
+                    <p className="text-sm text-gray-600">
+                      Start Time:{" "}
+                      {new Date(listing.startTime).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      End Time: {new Date(listing.endTime).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Payment Method: {listing.paymentMethod}
+                    </p>
                   </div>
 
-                  {/* Status Badge */}
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      listing.isAvailable
-                        ? "bg-green-100 text-green-600"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {listing.isAvailable ? "Available" : "Not Available"}
+                  <span className="px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-600">
+                    {listing.status}
                   </span>
                 </div>
               ))

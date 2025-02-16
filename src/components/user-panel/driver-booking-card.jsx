@@ -2,7 +2,14 @@ import React from "react";
 import { FaStar } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const DriverBookingCard = ({ id, firstName, rating, hourlyPrice, availability, carCategory }) => {
+const DriverBookingCard = ({
+  id,
+  name,
+  rating,
+  hourlyPrice,
+  availability,
+  carCategory,
+}) => {
   return (
     <div className="bg-white rounded-2xl shadow-md p-4 w-full m-2 flex flex-col justify-between">
       {/* Driver Info */}
@@ -13,13 +20,15 @@ const DriverBookingCard = ({ id, firstName, rating, hourlyPrice, availability, c
           className="w-12 h-12 rounded-full"
         />
         <div className="w-full text-start">
-          <span className="font-semibold text-gray-800">{firstName}</span>
+          <span className="font-semibold text-gray-800">{name}</span>
           <div className="flex justify-between items-center w-full">
             <div className="flex items-center text-yellow-500 text-sm">
               <FaStar className="mr-1" />
               <span>{rating || 0}</span>
             </div>
-            <span className="text-sm ml-auto">{availability ? "Available" : "Not Available"}</span>
+            <span className="text-sm ml-auto">
+              {availability ? "Available" : "Not Available"}
+            </span>
           </div>
         </div>
       </div>
@@ -29,9 +38,7 @@ const DriverBookingCard = ({ id, firstName, rating, hourlyPrice, availability, c
         <span className="text-primaryGray text-xs">Drive</span>
         <div className="flex space-x-2 mt-1">
           {carCategory && (
-            <span
-              className="bg-bgGray px-[10px] py-1 text-[12px] rounded-full text-xs"
-            >
+            <span className="bg-bgGray px-[10px] py-1 text-[12px] rounded-full text-xs">
               {carCategory}
             </span>
           )}
@@ -47,7 +54,7 @@ const DriverBookingCard = ({ id, firstName, rating, hourlyPrice, availability, c
         </Link>
         <div className="text-right">
           <span className="text-primaryGray text-xs">Per hour</span>
-          <p className="font-semibold text-lg">₦{hourlyPrice}</p>
+          <p className="font-semibold text-lg">₦{hourlyPrice || 7.8}</p>
         </div>
       </div>
     </div>

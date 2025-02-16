@@ -98,11 +98,11 @@ export default function Dashboard() {
         };
 
         const response = await axios.get(
-          `${BaseURL}/rent/rented-cars-by-driver/${driverId}`, // Adjust API if needed
+          `${BaseURL}/bookings/driver-bookings`, // Adjust API if needed
           config
         );
 
-        const rentedCars = response.data.rentedCars || [];
+        const rentedCars = response.data.bookings || [];
 
         // Set total bookings
         setTotalBookings(rentedCars.length);
@@ -173,13 +173,14 @@ export default function Dashboard() {
           },
         };
         const { data } = await axios.get(`${BaseURL}/rides/driver`, config);
+        console.log("rides data of driver", data);
 
         if (data && data.driverRides) {
           const rides = data.driverRides;
           const total = rides.length;
 
           const acceptedRides = rides.filter(
-            (ride) => ride.status === "accepted"
+            (ride) => ride.status === "completed"
           ).length;
           const canceledRides = rides.filter(
             (ride) => ride.status === "canceled"
@@ -196,7 +197,7 @@ export default function Dashboard() {
           setCanceledPercentage(canceledPct);
 
           setRidesData([
-            { name: "Accepted", value: acceptedRides, color: "#8257E9" },
+            { name: "Completed", value: acceptedRides, color: "#8257E9" },
             { name: "Canceled", value: canceledRides, color: "#4C1D95" },
           ]);
         }
@@ -310,7 +311,7 @@ export default function Dashboard() {
               <div className="flex justify-center gap-6 mt-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-[#8257E9]" />
-                  <span>Accepted</span>
+                  <span>Completed</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-[#4C1D95]" />

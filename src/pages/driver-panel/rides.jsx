@@ -50,7 +50,7 @@ export default function TotalListings() {
           const total = rides.length;
 
           const acceptedRides = rides.filter(
-            (ride) => ride.status === "accepted"
+            (ride) => ride.status === "completed"
           ).length;
           const canceledRides = rides.filter(
             (ride) => ride.status === "canceled"
@@ -67,7 +67,7 @@ export default function TotalListings() {
           setCanceledPercentage(canceledPct);
 
           setRidesData([
-            { name: "Accepted", value: acceptedRides, color: "#8257E9" },
+            { name: "Completed", value: acceptedRides, color: "#8257E9" },
             { name: "Canceled", value: canceledRides, color: "#4C1D95" },
           ]);
 
@@ -220,7 +220,7 @@ export default function TotalListings() {
 
                   <span
                     className={`px-3 py-1 rounded-full text-sm ${
-                      listing.status === "accepted"
+                      listing.status === "completed"
                         ? "bg-purple-100 text-purple-600"
                         : listing.status === "canceled"
                         ? "bg-red-100 text-red-600"
