@@ -1,164 +1,105 @@
 "use client";
 
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Eye, Pencil, Trash, ChevronDown, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const passengers = [
-  {
-    id: 1,
-    name: "pankaj",
-    phone: "+91 xxxxxxxx87",
-    gender: "Male",
-    createdAt: "05 February 2025 10:54 AM",
-    walletAmount: "$ 0.00",
-    status: true,
-  },
-  {
-    id: 2,
-    name: "ssp",
-    phone: "+91 xxxxxxxx88",
-    gender: "Male",
-    createdAt: "05 February 2025 08:59 AM",
-    walletAmount: "$ 0.00",
-    status: true,
-  },
-  {
-    id: 3,
-    name: "Alexis G",
-    phone: "+32 xxxxxxx05",
-    gender: "Male",
-    createdAt: "04 February 2025 11:15 PM",
-    walletAmount: "$ 0.00",
-    status: true,
-  },
-  {
-    id: 4,
-    name: "abccaga",
-    phone: "+91 xxxxxxxx89",
-    gender: "Male",
-    createdAt: "04 February 2025 06:09 PM",
-    walletAmount: "$ 0.00",
-    status: true,
-  },
-  // Add more passengers as needed
-];
+export default function UserInfoPage() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [token, setToken] = useState(null);
 
-export default function PassengersPage() {
+  // Retrieve token dynamically (adjust if using a different auth strategy)
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setToken(storedToken);
+    } else {
+      setError("No token found");
+    }
+  }, []);
+
+  // Function to fetch user information from the API
+  const fetchUserInfo = async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("https://moovr-api.vercel.app/api/api/v1/auth/get-user", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch user info");
+      }
+      const data = await response.json();
+      setUser(data.user);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch user info once the token is available
+  useEffect(() => {
+    if (token) {
+      fetchUserInfo();
+    }
+  }, [token]);
+
   return (
     <div className="p-6 space-y-6 bg-gray-50/50">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-semibold">Users</h1>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>Dashboard</span>
-            <span>/</span>
-            <span className="text-orange-500">Users</span>
+      <h1 className="text-2xl font-semibold">User Information</h1>
+      {loading ? (
+        <p>Loading user info...</p>
+      ) : error ? (
+        <p className="text-red-500">Error: {error}</p>
+      ) : user ? (
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="flex items-center gap-4">
+            <Avatar>
+              <AvatarImage src="/placeholder.svg" alt={`${user.firstName} ${user.lastName}`} />
+              <AvatarFallback>{user.firstName?.[0]}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className="text-xl font-medium">
+                {user.firstName} {user.lastName}
+              </h2>
+              <p className="text-gray-500">{user.phone}</p>
+            </div>
+          </div>
+          <div className="mt-4 space-y-1">
+            <p>
+              <strong>Role:</strong> {user.role}
+            </p>
+            <p>
+              <strong>City:</strong> {user.city}
+            </p>
+            <p>
+              <strong>Driver Type:</strong> {user.driverType}
+            </p>
+            <p>
+              <strong>Service Type:</strong> {user.serviceType}
+            </p>
+            <p>
+              <strong>Car Category:</strong> {user.carCategory}
+            </p>
+            <p>
+              <strong>Referral Code:</strong> {user.referralCode}
+            </p>
           </div>
         </div>
-      </div>
-
-      <div className="flex gap-3 justify-end">
-        <Select>
-          <SelectTrigger className="w-32">
-            <SelectValue placeholder="Name" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">Name</SelectItem>
-            <SelectItem value="email">Email</SelectItem>
-            <SelectItem value="date">Date</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <div className="relative flex items-center">
-          <Input placeholder="Search here" className="w-64 pl-8" />
-          <Search className="absolute left-2 h-4 w-4 text-gray-400" />
-        </div>
-
-        <Select>
-          <SelectTrigger className="w-20">
-            <SelectValue placeholder="10" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="20">20</SelectItem>
-            <SelectItem value="50">50</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="bg-gray-50/80">PROFILE IMAGE</TableHead>
-              <TableHead className="bg-gray-50/80">FULL NAME</TableHead>
-              <TableHead className="bg-gray-50/80">GENDER</TableHead>
-              <TableHead className="bg-gray-50/80">CREATED AT</TableHead>
-              <TableHead className="bg-gray-50/80">WALLET AMOUNT</TableHead>
-              <TableHead className="bg-gray-50/80">STATUS</TableHead>
-              <TableHead className="bg-gray-50/80">ACTION</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {passengers.map((passenger) => (
-              <TableRow key={passenger.id}>
-                <TableCell>
-                  <Avatar>
-                    <AvatarImage src="/placeholder.svg" alt={passenger.name} />
-                    <AvatarFallback>{passenger.name[0]}</AvatarFallback>
-                  </Avatar>
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <p className="font-medium">{passenger.name}</p>
-                    <p className="text-gray-500 text-sm">{passenger.phone}</p>
-                  </div>
-                </TableCell>
-                <TableCell>{passenger.gender}</TableCell>
-                <TableCell>{passenger.createdAt}</TableCell>
-                <TableCell>{passenger.walletAmount}</TableCell>
-                <TableCell>
-                  <Switch
-                    checked={passenger.status}
-                    className="data-[state=checked]:bg-orange-500"
-                  />
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="icon">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      ) : (
+        <p>No user info found.</p>
+      )}
+      <Button onClick={fetchUserInfo} disabled={loading}>
+        {loading ? "Refreshing..." : "Refresh Info"}
+      </Button>
     </div>
   );
 }

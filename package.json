@@ -11,9 +11,7 @@
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@nextui-org/avatar": "latest",
-    "@nextui-org/button": "latest",
     "@nextui-org/card": "latest",
-    "@nextui-org/chip": "latest",
     "@nextui-org/dropdown": "latest",
     "@nextui-org/input": "latest",
     "@nextui-org/system": "latest",
@@ -62,6 +60,7 @@
     "react-day-picker": "8.10.1",
     "react-dom": "^18",
     "react-hook-form": "^7.54.1",
+    "react-hot-toast": "^2.5.2",
     "react-resizable-panels": "^2.1.7",
     "recharts": "latest",
     "sonner": "^1.7.1",

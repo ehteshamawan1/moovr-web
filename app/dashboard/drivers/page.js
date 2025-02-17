@@ -31,13 +31,28 @@ export default function DriversPage() {
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM"; // Replace with actual token management
-        const response = await axios.get("https://moovr-api.vercel.app/api/v1/auth/drivers/available", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setDrivers(response.data.availableDrivers);
+        // Using the "Get All Drivers" endpoint.
+        const response = await axios.get(
+          "https://moovr-api.vercel.app/api/v1/auth/drivers/all"
+        );
+        // The API response structure:
+        // {
+        //   drivers: [
+        //     {
+        //       firstName: "string",
+        //       lastName: "string",
+        //       phone: "string",
+        //       role: "string",
+        //       city: "string",
+        //       driverType: "string",
+        //       serviceType: "string",
+        //       carCategory: "string",
+        //       referralCode: "string"
+        //     },
+        //     ...
+        //   ]
+        // }
+        setDrivers(response.data.drivers || []);
       } catch (err) {
         setError("Failed to fetch drivers");
       } finally {
@@ -82,6 +97,9 @@ export default function DriversPage() {
               <TableHead>PHONE</TableHead>
               <TableHead>CITY</TableHead>
               <TableHead>SERVICE TYPE</TableHead>
+              <TableHead>DRIVER TYPE</TableHead>
+              <TableHead>CAR CATEGORY</TableHead>
+              <TableHead>REFERRAL CODE</TableHead>
               <TableHead>STATUS</TableHead>
               <TableHead>ACTION</TableHead>
             </TableRow>
@@ -91,18 +109,31 @@ export default function DriversPage() {
               <TableRow key={index}>
                 <TableCell>
                   <Avatar>
-                    <AvatarImage src="/placeholder.svg" alt={driver.firstName} />
-                    <AvatarFallback>{driver.firstName[0]}</AvatarFallback>
+                    <AvatarImage
+                      src="/placeholder.svg"
+                      alt={driver.firstName}
+                    />
+                    <AvatarFallback>
+                      {driver.firstName[0]}
+                    </AvatarFallback>
                   </Avatar>
                 </TableCell>
                 <TableCell>
-                  <p className="font-medium">{driver.firstName} {driver.lastName}</p>
+                  <p className="font-medium">
+                    {driver.firstName} {driver.lastName}
+                  </p>
                 </TableCell>
                 <TableCell>{driver.phone}</TableCell>
                 <TableCell>{driver.city}</TableCell>
                 <TableCell>{driver.serviceType}</TableCell>
+                <TableCell>{driver.driverType}</TableCell>
+                <TableCell>{driver.carCategory}</TableCell>
+                <TableCell>{driver.referralCode}</TableCell>
                 <TableCell>
-                  <Switch checked={true} className="data-[state=checked]:bg-orange-500" />
+                  <Switch
+                    checked={true}
+                    className="data-[state=checked]:bg-orange-500"
+                  />
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">

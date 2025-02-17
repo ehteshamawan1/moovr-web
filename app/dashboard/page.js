@@ -115,8 +115,8 @@ export default function DashboardPage() {
             ? "https://moovr-api.vercel.app/past-driver-bookings"
             : "https://moovr-api.vercel.app/api/v1/past-user-bookings";
         const response = await axios.get(endpoint);
-        // Assuming the API returns an object with a "bookings" key.
-        setBookings(response.data.bookings);
+        // Use fallback to an empty array if the API response doesn't include bookings.
+        setBookings(response.data.bookings || []);
       } catch (error) {
         setBookingsError("Failed to fetch past bookings");
       } finally {
@@ -235,18 +235,10 @@ export default function DashboardPage() {
               <Table aria-label="Recent bookings">
                 <TableHeader>
                   <TableColumn className="bg-gray-50">Order Id</TableColumn>
-                  <TableColumn className="bg-gray-50">
-                    Customer Name
-                  </TableColumn>
-                  <TableColumn className="bg-gray-50">
-                    Booking Date
-                  </TableColumn>
-                  <TableColumn className="bg-gray-50">
-                    Payment Status
-                  </TableColumn>
-                  <TableColumn className="bg-gray-50">
-                    Booking Status
-                  </TableColumn>
+                  <TableColumn className="bg-gray-50">Customer Name</TableColumn>
+                  <TableColumn className="bg-gray-50">Booking Date</TableColumn>
+                  <TableColumn className="bg-gray-50">Payment Status</TableColumn>
+                  <TableColumn className="bg-gray-50">Booking Status</TableColumn>
                   <TableColumn className="bg-gray-50">Total</TableColumn>
                 </TableHeader>
                 <TableBody>
