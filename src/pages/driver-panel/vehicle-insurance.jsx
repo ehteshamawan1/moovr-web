@@ -44,12 +44,13 @@ export default function VehicleInsurance() {
     form.append("file", formData.file);
 
     try {
+      const token = localStorage.getItem("token"); // Get token from localStorage
+
       const response = await fetch(`${BaseURL}/driver/upload-document`, {
         method: "POST",
         body: form,
         headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ODNmNTY1MzEzNTVjMDY5OGViZDE1OSIsInBob25lIjoiKzkyMDAwMDAiLCJyb2xlIjoidXNlciIsImlhdCI6MTczNjcwMTMwMCwiZXhwIjoxNzM3OTk3MzAwfQ.hy2U2MUxXhXpf5iIhxKzsBG71isJGm9JAs0GQCSL4vM",
+          Authorization: `Bearer ${token}`, // Use the retrieved token
         },
       });
 
@@ -62,6 +63,7 @@ export default function VehicleInsurance() {
       console.error(error);
       toast.error("An error occurred while uploading the document.");
     }
+
   };
 
   return (

@@ -39,7 +39,6 @@ import Reserve from "../pages/user-panel/reserve/reserve";
 import DriverStart from "../pages/user-panel/driver/start";
 import PackageCarSelection from "../pages/user-panel/package/selection";
 import TrackPackage from "../pages/user-panel/package/track";
-
 import CarpoolSelection from "../pages/user-panel/carpool/selection";
 import Carpool from "../pages/user-panel/carpool/carpool.jsx";
 import ReserveRide from "../pages/user-panel/reserve/reserve-ride.jsx";

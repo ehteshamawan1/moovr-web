@@ -21,7 +21,7 @@ const DriverRegister = () => {
 
     try {
       const response = await axios.post(
-        `${BaseURL}/v1/auth/verify-phone`,
+        `${BaseURL}/auth/verify-phone`,
         {
           phone: `+${phoneNumber}`,
           role: "driver",

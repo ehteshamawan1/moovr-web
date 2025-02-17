@@ -22,7 +22,7 @@ const Register = () => {
 
     try {
       const response = await axios.post(
-        `${BaseURL}/v1/auth/verify-phone`,
+        `${BaseURL}/auth/verify-phone`,
         {
           phone: `+${phoneNumber}`,
           role: "user",
@@ -32,7 +32,10 @@ const Register = () => {
 
       if (response.status === 200) {
         toast.success("OTP requested successfully!");
-        localStorage.setItem("userData", JSON.stringify({ phone: phoneNumber }));
+        localStorage.setItem(
+          "userData",
+          JSON.stringify({ phone: phoneNumber })
+        );
         navigate("/verification");
       } else {
         toast.error("Unexpected response. Please try again.");

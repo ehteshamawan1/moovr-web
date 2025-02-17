@@ -48,7 +48,7 @@ const Verification = () => {
 
     try {
       const response = await axios.post(
-        `${BaseURL}/v1/auth/verify-otp`,
+        `${BaseURL}/auth/verify-otp`,
         { otp: verificationCode, phone: `+${phoneNumber}` },
         { headers: { "Content-Type": "application/json" } }
       );

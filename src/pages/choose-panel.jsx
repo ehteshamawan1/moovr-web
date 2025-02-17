@@ -41,7 +41,7 @@ export default function ChoosePanel() {
             </button>
 
             <button className="w-full p-4 bg-gray-50 h-[120px] border border-gray-300 rounded-lg text-left hover:bg-gray-100 transition-colors">
-              <Link to={"/user-register"} state={{ role: "user" }}>
+              <Link to={"/signup"} state={{ role: "user" }}>
                 <h3 className="font-medium mb-1">User</h3>
                 <p className="text-sm text-gray-500">
                   Create an account to book rides conveniently.
