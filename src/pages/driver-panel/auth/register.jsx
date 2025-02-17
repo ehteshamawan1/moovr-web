@@ -89,7 +89,7 @@ const DriverRegister = () => {
             <hr className="flex-1" />
           </div>
           <div className="space-y-3">
-            <button className="w-full py-2 border border-gray-300 rounded-full flex items-center justify-center space-x-2 hover:bg-gray-100">
+            {/* <button className="w-full py-2 border border-gray-300 rounded-full flex items-center justify-center space-x-2 hover:bg-gray-100">
               <img src="/icons/google.svg" alt="Google" className="w-5 h-5" />
               <span>Continue with Google</span>
             </button>
@@ -108,7 +108,7 @@ const DriverRegister = () => {
                 className="w-5 h-5"
               />
               <span>Continue with Facebook</span>
-            </button>
+            </button> */}
           </div>
           <p className="text-xs text-gray-500 mt-4">
             By proceeding, you consent to get calls, WhatsApp, or SMS messages,
